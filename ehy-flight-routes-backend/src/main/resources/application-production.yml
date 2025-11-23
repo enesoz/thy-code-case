@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ehy_flight_routes}
+    username: ${SPRING_DATASOURCE_USERNAME:ehy_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:ehy_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+
+server:
+  port: 8080
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+
+jwt:
+  # In production, JWT_SECRET must be provided via environment variable.
+  # The following default is for dev/test convenience only; DO NOT use in real production.
+  secret: ${JWT_SECRET:ThisIsADevOnlyFallback_ChangeMe}
+  # Optional: allow overriding expiration via env; defaults to 24h if not set
+  expiration: ${JWT_EXPIRATION:86400000}
+
+logging:
+  level:
+    root: WARN
+    com.ehy: INFO
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

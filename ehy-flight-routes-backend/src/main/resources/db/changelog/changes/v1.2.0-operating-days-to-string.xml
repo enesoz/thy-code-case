@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+      Purpose: Migrate transportations.operating_days from Postgres INT[] to VARCHAR(50) comma-separated string.
+      Notes:
+        - Fresh installs from v1.0.0 already create VARCHAR(50), so we guard with a precondition.
+        - This changeSet is idempotent: if column is already character varying, it will be marked as ran.
+        - Delimiter used: comma without spaces (e.g., "1,3,5").
+    -->
+    <changeSet id="v1.2.0-operating-days-to-string" author="ehy-team">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <!-- Run only when current column data type is an array (int[]) -->
+            <sqlCheck expectedResult="ARRAY"> 
+                SELECT data_type FROM information_schema.columns 
+                WHERE table_name = 'transportations' AND column_name = 'operating_days'
+            </sqlCheck>
+        </preConditions>
+
+        <comment>Migrate operating_days from INT[] to VARCHAR(50) as comma-separated values</comment>
+
+        <!-- 1) Add a temporary VARCHAR column -->
+        <addColumn tableName="transportations">
+            <column name="operating_days_tmp" type="VARCHAR(50)"/>
+        </addColumn>
+
+        <!-- 2) Copy data from int[] to comma-separated string -->
+        <update tableName="transportations">
+            <column name="operating_days_tmp" valueComputed="array_to_string(operating_days, ',')"/>
+        </update>
+
+        <!-- 3) Ensure no NULL values remain and set NOT NULL -->
+        <sql>
+            UPDATE transportations SET operating_days_tmp = '' WHERE operating_days_tmp IS NULL;
+        </sql>
+        <addNotNullConstraint tableName="transportations" columnName="operating_days_tmp" columnDataType="VARCHAR(50)"/>
+
+        <!-- 4) Drop old column and 5) rename tmp to final name -->
+        <dropColumn tableName="transportations" columnName="operating_days"/>
+        <renameColumn tableName="transportations" oldColumnName="operating_days_tmp" newColumnName="operating_days"/>
+
+        <!-- 6) Explicitly set final data type & constraint (safety) -->
+        <modifyDataType tableName="transportations" columnName="operating_days" newDataType="VARCHAR(50)"/>
+        <addNotNullConstraint tableName="transportations" columnName="operating_days" columnDataType="VARCHAR(50)"/>
+
+        <rollback>
+            <!-- Reverse: go back to INT[] using string_to_array casting -->
+            <addColumn tableName="transportations">
+                <column name="operating_days_old" type="INT[]"/>
+            </addColumn>
+            <sql>
+                UPDATE transportations 
+                SET operating_days_old = string_to_array(operating_days, ',')::int[];
+            </sql>
+            <dropColumn tableName="transportations" columnName="operating_days"/>
+            <renameColumn tableName="transportations" oldColumnName="operating_days_old" newColumnName="operating_days"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

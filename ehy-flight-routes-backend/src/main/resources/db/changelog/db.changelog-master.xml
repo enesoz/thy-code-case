@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Include schema changes -->
+    <include file="db/changelog/changes/v1.0.0-create-schema.xml"/>
+
+    <!-- Include seed data -->
+    <include file="db/changelog/changes/v1.0.0-seed-data.xml"/>
+
+    <!-- Include audit trail fields -->
+    <include file="db/changelog/changes/v1.1.0-add-audit-fields.xml"/>
+
+    <!-- Migrate operating_days from INT[] to VARCHAR(50) (existing DBs only) -->
+    <include file="db/changelog/changes/v1.2.0-operating-days-to-string.xml"/>
+
+</databaseChangeLog>

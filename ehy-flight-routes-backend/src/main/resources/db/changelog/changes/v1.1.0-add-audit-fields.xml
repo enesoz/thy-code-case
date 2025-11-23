@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v1.1.0-add-audit-fields-locations" author="system">
+        <comment>Add audit trail fields to locations table</comment>
+
+        <addColumn tableName="locations">
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </addColumn>
+
+        <!-- Set default values for existing records -->
+        <update tableName="locations">
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </update>
+    </changeSet>
+
+    <changeSet id="v1.1.0-add-audit-fields-transportations" author="system">
+        <comment>Add audit trail fields to transportations table</comment>
+
+        <addColumn tableName="transportations">
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </addColumn>
+
+        <!-- Set default values for existing records -->
+        <update tableName="transportations">
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </update>
+    </changeSet>
+
+    <changeSet id="v1.1.0-add-audit-fields-users" author="system">
+        <comment>Add audit trail fields to users table</comment>
+
+        <addColumn tableName="users">
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </addColumn>
+
+        <!-- Set default values for existing records -->
+        <update tableName="users">
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Seed users: admin/admin123 and agency/agency123 (BCrypt encoded passwords) -->
+    <changeSet id="seed-1" author="ehy-team">
+        <insert tableName="users">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="username" value="admin"/>
+            <!-- BCrypt hash for "admin123" -->
+            <column name="password" value="$2a$10$NuC9moUsMe28txdRhMuzQuOPRUlPTZIkhlKX5p8R8RQeC6InMTc9K"/>
+            <column name="role" value="ADMIN"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="username" value="agency"/>
+            <!-- BCrypt hash for "agency123" -->
+            <column name="password" value="$2a$10$q9pEEqazTmaOnwA9gaLoseQ3xBfg5qH8LYeGLtll7z0wT4tNNevle"/>
+            <column name="role" value="AGENCY"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed locations -->
+    <changeSet id="seed-2" author="ehy-team">
+        <!-- Istanbul Airport -->
+        <insert tableName="locations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="name" value="Istanbul Airport"/>
+            <column name="country" value="Turkey"/>
+            <column name="city" value="Istanbul"/>
+            <column name="location_code" value="IST"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="1"/>
+        </insert>
+
+        <!-- Sabiha Gokcen Airport -->
+        <insert tableName="locations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="name" value="Sabiha Gokcen Airport"/>
+            <column name="country" value="Turkey"/>
+            <column name="city" value="Istanbul"/>
+            <column name="location_code" value="SAW"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="2"/>
+        </insert>
+
+        <!-- London Heathrow Airport -->
+        <insert tableName="locations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="name" value="London Heathrow Airport"/>
+            <column name="country" value="United Kingdom"/>
+            <column name="city" value="London"/>
+            <column name="location_code" value="LHR"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="3"/>
+        </insert>
+
+        <!-- Taksim Square -->
+        <insert tableName="locations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="name" value="Taksim Square"/>
+            <column name="country" value="Turkey"/>
+            <column name="city" value="Istanbul"/>
+            <column name="location_code" value="TAKSIM"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="4"/>
+        </insert>
+
+        <!-- Wembley Stadium -->
+        <insert tableName="locations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="name" value="Wembley Stadium"/>
+            <column name="country" value="United Kingdom"/>
+            <column name="city" value="London"/>
+            <column name="location_code" value="WEMBLEY"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="5"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed transportations -->
+    <changeSet id="seed-3" author="ehy-team">
+        <!-- BUS: Taksim → IST (daily) -->
+        <insert tableName="transportations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="origin_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'TAKSIM')"/>
+            <column name="destination_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'IST')"/>
+            <column name="transportation_type" value="BUS"/>
+            <column name="operating_days" value="1,2,3,4,5,6,7"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+
+        <!-- SUBWAY: Taksim → IST (daily) -->
+        <insert tableName="transportations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="origin_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'TAKSIM')"/>
+            <column name="destination_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'IST')"/>
+            <column name="transportation_type" value="SUBWAY"/>
+            <column name="operating_days" value="1,2,3,4,5,6,7"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+
+        <!-- BUS: Taksim → SAW (daily) -->
+        <insert tableName="transportations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="origin_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'TAKSIM')"/>
+            <column name="destination_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'SAW')"/>
+            <column name="transportation_type" value="BUS"/>
+            <column name="operating_days" value="1,2,3,4,5,6,7"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+
+        <!-- FLIGHT: IST → LHR (Mon, Wed, Fri, Sun) -->
+        <insert tableName="transportations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="origin_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'IST')"/>
+            <column name="destination_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'LHR')"/>
+            <column name="transportation_type" value="FLIGHT"/>
+            <column name="operating_days" value="1,3,5,7"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+
+        <!-- FLIGHT: SAW → LHR (Tue, Thu, Sat) -->
+        <insert tableName="transportations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="origin_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'SAW')"/>
+            <column name="destination_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'LHR')"/>
+            <column name="transportation_type" value="FLIGHT"/>
+            <column name="operating_days" value="2,4,6"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+
+        <!-- UBER: LHR → WEMBLEY (daily) -->
+        <insert tableName="transportations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="origin_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'LHR')"/>
+            <column name="destination_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'WEMBLEY')"/>
+            <column name="transportation_type" value="UBER"/>
+            <column name="operating_days" value="1,2,3,4,5,6,7"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+
+        <!-- BUS: LHR → WEMBLEY (daily) -->
+        <insert tableName="transportations">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="origin_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'LHR')"/>
+            <column name="destination_location_id" valueComputed="(SELECT id FROM locations WHERE location_code = 'WEMBLEY')"/>
+            <column name="transportation_type" value="BUS"/>
+            <column name="operating_days" value="1,2,3,4,5,6,7"/>
+            <column name="deleted" valueBoolean="false"/>
+            <column name="optimistic_lock_version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

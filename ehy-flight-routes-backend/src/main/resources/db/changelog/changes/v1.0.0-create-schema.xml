@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- to enable gen_uuid function -->
+    <changeSet id="enable-pgcrypto" author="ehy-team" dbms="postgresql">
+        <sql>CREATE EXTENSION IF NOT EXISTS pgcrypto;</sql>
+    </changeSet>
+
+    <!-- Create users table -->
+    <changeSet id="1" author="ehy-team">
+        <createTable tableName="users">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="optimistic_lock_version" type="BIGINT" defaultValue="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Create locations table -->
+    <changeSet id="2" author="ehy-team">
+        <createTable tableName="locations">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="UUID"/>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="city" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="location_code" type="VARCHAR(10)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="optimistic_lock_version" type="BIGINT" defaultValue="0"/>
+            <column name="display_order" type="INT"/>
+        </createTable>
+
+        <createIndex indexName="idx_location_code" tableName="locations">
+            <column name="location_code"/>
+        </createIndex>
+
+        <createIndex indexName="idx_tenant_deleted" tableName="locations">
+            <column name="tenant_id"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Create transportations table -->
+    <changeSet id="3" author="ehy-team">
+        <createTable tableName="transportations">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="UUID"/>
+            <column name="origin_location_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_transportation_origin"
+                             references="locations(id)"/>
+            </column>
+            <column name="destination_location_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_transportation_destination"
+                             references="locations(id)"/>
+            </column>
+            <column name="transportation_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Store operating days as comma-separated string (e.g., "1,3,5,7") -->
+            <column name="operating_days" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="optimistic_lock_version" type="BIGINT" defaultValue="0"/>
+        </createTable>
+
+        <createIndex indexName="idx_origin_dest" tableName="transportations">
+            <column name="origin_location_id"/>
+            <column name="destination_location_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_type_deleted" tableName="transportations">
+            <column name="transportation_type"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

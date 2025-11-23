@@ -1,0 +1,29 @@
+{
+    "name": "@thy-code-case/api-specification",
+    "version": "1.0.0",
+    "description": "OpenAPI specification and generated TypeScript types for THY Flight Routes API",
+    "main": "generated/index.ts",
+    "types": "generated/index.d.ts",
+    "exports": {
+        ".": "./generated/index.ts",
+        "./shared": "./shared.ts"
+    },
+    "scripts": {
+        "generate:types": "npx openapi-typescript-codegen --input ./openapi.json --output ./generated --exportCore false --exportServices false --exportModels true",
+        "copy:schema": "curl http://localhost:8080/v3/api-docs -o openapi.json",
+        "update": "npm run copy:schema && npm run generate:types",
+        "clean": "rimraf generated"
+    },
+    "keywords": [
+        "openapi",
+        "typescript",
+        "api",
+        "types"
+    ],
+    "author": "THY Code Case",
+    "license": "MIT",
+    "devDependencies": {
+        "openapi-typescript-codegen": "^0.29.0",
+        "rimraf": "^6.0.1"
+    }
+}
