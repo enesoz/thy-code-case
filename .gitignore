@@ -64,3 +64,4 @@ ehy-flight-routes-backend/.vscode/
 *.njsproj
 *.sln
 *.sw?
+/.idea/
