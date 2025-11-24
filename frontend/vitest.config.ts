@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -16,6 +17,11 @@ export default defineConfig({
         '**/*.test.{ts,tsx}',
         '**/__tests__/**',
       ],
+    },
+  },
+  resolve: {
+    alias: {
+      '@api-specification': path.resolve(__dirname, '../api-specification/generated'),
     },
   },
 });

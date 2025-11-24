@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:docker": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "generate:api-types": "cd ../api-specification && npm run generate:types",
+    "generate:api-types": "cd ../api-specification 2>/dev/null && npm run generate:types || cd /app-root/api-specification && npm run generate:types",
     "prebuild": "npm run generate:api-types"
   },
   "dependencies": {
