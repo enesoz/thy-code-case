@@ -10,6 +10,8 @@ import com.ehy.repository.LocationRepository;
 import com.ehy.repository.TransportationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +57,7 @@ public class LocationService {
      * @return Location details
      * @throws ResourceNotFoundException if location not found
      */
+    @Cacheable(value ="locationById" , key = "#id")
     public LocationResponse getLocationById(UUID id) {
         logger.debug("Retrieving location with id: {}", id);
         Location location = locationRepository.findById(id)
@@ -64,11 +67,14 @@ public class LocationService {
 
     /**
      * Create a new location
+     * Evicts all cached routes since new location may affect route calculations.
+     *
      * @param request Location creation request
      * @return Created location
      * @throws DuplicateResourceException if location code already exists
      */
     @Transactional
+    @CacheEvict(value = "routes, locationById", allEntries = true)
     public LocationResponse createLocation(LocationRequest request) {
         logger.info("Creating new location with code: {}", request.getLocationCode());
 
@@ -88,6 +94,8 @@ public class LocationService {
 
     /**
      * Update an existing location
+     * Evicts all cached routes since location changes may affect route calculations.
+     *
      * @param id Location ID
      * @param request Location update request
      * @return Updated location
@@ -95,6 +103,7 @@ public class LocationService {
      * @throws DuplicateResourceException if location code already exists for another location
      */
     @Transactional
+    @CacheEvict(value = "routes, locationById", allEntries = true)
     public LocationResponse updateLocation(UUID id, LocationRequest request) {
         logger.info("Updating location with id: {}", id);
 
@@ -120,12 +129,14 @@ public class LocationService {
      * Soft delete a location
      * Validates that no active transportations reference this location before deletion.
      * Uses @SQLDelete annotation to automatically set deleted flag to true.
+     * Evicts all cached routes since location deletion may affect route availability.
      *
      * @param id Location ID
      * @throws ResourceNotFoundException if location not found
      * @throws IllegalStateException if location has active transportations
      */
     @Transactional
+    @CacheEvict(value = "routes, locationById", allEntries = true)
     public void deleteLocation(UUID id) {
         logger.info("Deleting location with id: {}", id);
 

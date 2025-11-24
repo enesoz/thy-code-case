@@ -10,6 +10,8 @@ import com.ehy.repository.LocationRepository;
 import com.ehy.repository.TransportationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +58,7 @@ public class TransportationService {
      * @return Transportation details
      * @throws ResourceNotFoundException if transportation not found
      */
+    @Cacheable(value = "transportationById", key ="#id" )
     public TransportationResponse getTransportationById(UUID id) {
         logger.debug("Retrieving transportation with id: {}", id);
         Transportation transportation = transportationRepository.findById(id)
@@ -65,12 +68,15 @@ public class TransportationService {
 
     /**
      * Create a new transportation
+     * Evicts all cached routes since new transportation directly affects route availability.
+     *
      * @param request Transportation creation request
      * @return Created transportation
      * @throws ResourceNotFoundException if origin or destination location not found
      * @throws IllegalArgumentException if operating days are invalid
      */
     @Transactional
+    @CacheEvict(value = {"routes", "transportationById"}, allEntries = true)
     public TransportationResponse createTransportation(TransportationRequest request) {
         logger.info("Creating new transportation from {} to {}",
                 request.getOriginLocationId(), request.getDestinationLocationId());
@@ -103,6 +109,8 @@ public class TransportationService {
 
     /**
      * Update an existing transportation
+     * Evicts all cached routes since transportation changes directly affect route availability.
+     *
      * @param id Transportation ID
      * @param request Transportation update request
      * @return Updated transportation
@@ -110,6 +118,7 @@ public class TransportationService {
      * @throws IllegalArgumentException if operating days are invalid
      */
     @Transactional
+    @CacheEvict(value = {"routes", "transportationById"}, allEntries = true)
     public TransportationResponse updateTransportation(UUID id, TransportationRequest request) {
         logger.info("Updating transportation with id: {}", id);
 
@@ -144,11 +153,13 @@ public class TransportationService {
     /**
      * Soft delete a transportation
      * Uses @SQLDelete annotation to automatically set deleted flag to true.
+     * Evicts all cached routes since transportation deletion directly affects route availability.
      *
      * @param id Transportation ID
      * @throws ResourceNotFoundException if transportation not found
      */
     @Transactional
+    @CacheEvict(value = {"routes", "transportationById"}, allEntries = true)
     public void deleteTransportation(UUID id) {
         logger.info("Deleting transportation with id: {}", id);
 
