@@ -12,6 +12,7 @@ interface RouteSearchFormProps {
     originId: string;
     destinationId: string;
     onSubmit: (data: RouteSearchFormData) => void;
+    onSwapLocations: () => void;
 }
 
 /**
@@ -25,6 +26,7 @@ export const RouteSearchForm: React.FC<RouteSearchFormProps> = ({
     originId,
     destinationId,
     onSubmit,
+    onSwapLocations,
 }) => {
     const {
         register,
@@ -35,7 +37,7 @@ export const RouteSearchForm: React.FC<RouteSearchFormProps> = ({
     return (
         <div className="card mb-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_1fr] gap-6 items-start">
                     {/* Origin Location */}
                     <div>
                         <label htmlFor="originId" className="label">
@@ -73,6 +75,33 @@ export const RouteSearchForm: React.FC<RouteSearchFormProps> = ({
                                 {errors.originId.message}
                             </p>
                         )}
+                    </div>
+
+                    {/* Swap Button */}
+                    <div className="flex items-end pb-2 md:pb-0 md:pt-8">
+                        <button
+                            type="button"
+                            onClick={onSwapLocations}
+                            disabled={isSearching || isLoadingLocations}
+                            className="p-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-primary-500 dark:hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Swap origin and destination"
+                            aria-label="Swap origin and destination locations"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 text-gray-600 dark:text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                                />
+                            </svg>
+                        </button>
                     </div>
 
                     {/* Destination Location */}

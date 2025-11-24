@@ -57,6 +57,14 @@ export function useRouteSearch() {
         setSearchError('');
     };
 
+    const swapLocations = () => {
+        const currentOrigin = form.getValues('originId');
+        const currentDestination = form.getValues('destinationId');
+
+        form.setValue('originId', currentDestination);
+        form.setValue('destinationId', currentOrigin);
+    };
+
     return {
         // Form
         form,
@@ -71,5 +79,6 @@ export function useRouteSearch() {
         // Actions
         onSubmit,
         clearResults,
+        swapLocations,
     };
 }

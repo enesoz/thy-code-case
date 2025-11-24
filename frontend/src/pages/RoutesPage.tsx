@@ -19,6 +19,7 @@ const RoutesPage: React.FC = () => {
     isSearching,
     searchError,
     onSubmit,
+    swapLocations,
   } = useRouteSearch();
 
   // Fetch locations for dropdowns
@@ -57,6 +58,7 @@ const RoutesPage: React.FC = () => {
         originId={originId}
         destinationId={destinationId}
         onSubmit={onSubmit}
+        onSwapLocations={swapLocations}
       />
 
       {/* Search Error */}

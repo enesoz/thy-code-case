@@ -46,17 +46,14 @@ public class RouteService {
      * Find all valid routes between origin and destination on a specific date.
      * Results are cached using Redis with key: originId:destinationId:date
      *
-     * Algorithm:
-     * 1. Extract day of week from date (1=Monday, ..., 7=Sunday)
-     * 2. Find all direct flights from origin to destination
-     * 3. Find all locations (for finding before/after-flight transfers)
-     * 4. Find all before-flight transfers (ground transport to any location with flight)
-     * 5. Find all after-flight transfers (flight from any location to destination)
-     * 6. Build valid route combinations:
+     * Optimized Algorithm (O(n + m) where n=locations, m=transportation edges):
+     * 1. Extract day of week from date
+     * 2. Build adjacency graph structure for O(1) lookups
+     * 3. Find valid route combinations:
      *    - Type 1: Direct flights only
      *    - Type 2: Before-flight transfer + Connected flight
      *    - Type 3: Flight + Connected after-flight transfer
-     *    - Type 4: Before-flight transfer + Flight + After-flight transfer (all connected)
+     *    - Type 4: Before-flight transfer + Flight + After-flight transfer
      *
      * @param originId Origin location UUID
      * @param destinationId Destination location UUID
@@ -67,111 +64,241 @@ public class RouteService {
     public List<RouteResponse> findRoutes(UUID originId, UUID destinationId, LocalDate date) {
         logger.debug("Finding routes from {} to {} on {}", originId, destinationId, date);
 
-        // Validate that origin and destination exist
-        Location origin = locationRepository.findById(originId)
-                .orElseThrow(() -> new ResourceNotFoundException("Location", "id", originId));
+        Location origin = validateLocation(originId);
+        Location destination = validateLocation(destinationId);
 
-        Location destination = locationRepository.findById(destinationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Location", "id", destinationId));
-
-        // Extract day of week (1=Monday, ..., 7=Sunday)
         int dayOfWeek = date.getDayOfWeek().getValue();
         logger.debug("Day of week: {} ({})", dayOfWeek, date.getDayOfWeek());
-
-        // Get all location IDs for finding potential transfer points (performance optimization)
-        // Using ID-only query instead of loading full entities
-        List<UUID> allLocationIds = locationRepository.findAllLocationIds();
 
         List<RouteResponse> routes = new ArrayList<>();
 
         // Type 1: Direct flights (no transfers)
-        logger.debug("Searching for direct flights...");
-        List<Transportation> directFlights = transportationRepository.findAvailableTransportationsByType(
-                originId, destinationId, TransportationType.FLIGHT, dayOfWeek
-        );
+        routes.addAll(findDirectFlights(originId, destinationId, dayOfWeek));
 
-        for (Transportation flight : directFlights) {
-            routes.add(buildRoute(List.of(flight)));
-        }
-        logger.debug("Found {} direct flights", directFlights.size());
+        // Build graph structure for complex routes
+        RouteGraph graph = buildRouteGraph(originId, destinationId, dayOfWeek);
 
         // Type 2: Before-flight transfer + Flight
-        logger.debug("Searching for routes with before-flight transfers...");
-        List<Transportation> beforeTransfers = transportationRepository.findAvailableNonFlightTransportations(
-                List.of(originId), allLocationIds, dayOfWeek
-        );
-
-        for (Transportation beforeTransfer : beforeTransfers) {
-            UUID intermediateLocationId = beforeTransfer.getDestinationLocation().getId();
-
-            // Find flights from intermediate location to destination
-            List<Transportation> connectingFlights = transportationRepository.findAvailableTransportationsByType(
-                    intermediateLocationId, destinationId, TransportationType.FLIGHT, dayOfWeek
-            );
-
-            for (Transportation flight : connectingFlights) {
-                routes.add(buildRoute(List.of(beforeTransfer, flight)));
-            }
-        }
-        logger.debug("Found {} routes with before-flight transfers", beforeTransfers.size());
+        routes.addAll(findBeforeFlightTransferRoutes(graph));
 
         // Type 3: Flight + After-flight transfer
-        logger.debug("Searching for routes with after-flight transfers...");
-        List<Transportation> flightsFromOrigin = transportationRepository.findAvailableFlights(
-                List.of(originId),
-                allLocationIds.stream()
-                        .filter(id -> !id.equals(destinationId))
-                        .toList(),
-                dayOfWeek
-        );
-
-        for (Transportation flight : flightsFromOrigin) {
-            UUID intermediateLocationId = flight.getDestinationLocation().getId();
-
-            // Find ground transfers from intermediate location to destination
-            List<Transportation> afterTransfers = transportationRepository.findAvailableNonFlightTransportations(
-                    List.of(intermediateLocationId), List.of(destinationId), dayOfWeek
-            );
-
-            for (Transportation afterTransfer : afterTransfers) {
-                routes.add(buildRoute(List.of(flight, afterTransfer)));
-            }
-        }
-        logger.debug("Found {} routes with after-flight transfers", flightsFromOrigin.size());
+        routes.addAll(findAfterFlightTransferRoutes(originId, graph));
 
         // Type 4: Before-flight transfer + Flight + After-flight transfer
-        logger.debug("Searching for routes with both before and after-flight transfers...");
-        for (Transportation beforeTransfer : beforeTransfers) {
-            UUID firstIntermediateId = beforeTransfer.getDestinationLocation().getId();
-
-            // Find flights from first intermediate location
-            List<Transportation> middleFlights = transportationRepository.findAvailableFlights(
-                    List.of(firstIntermediateId),
-                    allLocationIds.stream()
-                            .filter(id -> !id.equals(destinationId))
-                            .toList(),
-                    dayOfWeek
-            );
-
-            for (Transportation flight : middleFlights) {
-                UUID secondIntermediateId = flight.getDestinationLocation().getId();
-
-                // Find ground transfers to final destination
-                List<Transportation> afterTransfers = transportationRepository.findAvailableNonFlightTransportations(
-                        List.of(secondIntermediateId), List.of(destinationId), dayOfWeek
-                );
-
-                for (Transportation afterTransfer : afterTransfers) {
-                    routes.add(buildRoute(List.of(beforeTransfer, flight, afterTransfer)));
-                }
-            }
-        }
+        routes.addAll(findMultiTransferRoutes(graph));
 
         logger.info("Found {} total route(s) from {} to {} on {}",
                 routes.size(), origin.getLocationCode(), destination.getLocationCode(), date);
 
         return routes;
     }
+
+    /**
+     * Validates that a location exists.
+     */
+    private Location validateLocation(UUID locationId) {
+        return locationRepository.findById(locationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Location", "id", locationId));
+    }
+
+    /**
+     * Find direct flights between origin and destination.
+     */
+    private List<RouteResponse> findDirectFlights(UUID originId, UUID destinationId, int dayOfWeek) {
+        logger.debug("Searching for direct flights...");
+        List<Transportation> directFlights = transportationRepository.findAvailableTransportationsByType(
+                originId, destinationId, TransportationType.FLIGHT, dayOfWeek
+        );
+
+        List<RouteResponse> routes = directFlights.stream()
+                .map(flight -> buildRoute(List.of(flight)))
+                .toList();
+
+        logger.debug("Found {} direct flights", routes.size());
+        return routes;
+    }
+
+    /**
+     * Build adjacency graph structure for efficient route lookups.
+     * Batch-fetches all transportations to avoid O(n³) nested queries.
+     */
+    private RouteGraph buildRouteGraph(UUID originId, UUID destinationId, int dayOfWeek) {
+        List<UUID> allLocationIds = locationRepository.findAllLocationIds();
+
+        // Fetch ground transportations from origin
+        List<Transportation> groundFromOrigin = transportationRepository.findAvailableNonFlightTransportations(
+                List.of(originId), allLocationIds, dayOfWeek
+        );
+
+        // Identify intermediate locations
+        Set<UUID> intermediateLocations = groundFromOrigin.stream()
+                .map(t -> t.getDestinationLocation().getId())
+                .collect(HashSet::new, HashSet::add, HashSet::addAll);
+        intermediateLocations.add(originId);
+
+        // Build adjacency maps for flights
+        Map<UUID, List<Transportation>> flightsByOrigin = buildFlightsByOriginMap(
+                intermediateLocations, allLocationIds, destinationId, dayOfWeek
+        );
+
+        Map<UUID, List<Transportation>> flightsToDestination = buildFlightsToDestinationMap(
+                intermediateLocations, destinationId, dayOfWeek
+        );
+
+        // Build adjacency map for ground transfers to destination
+        Map<UUID, List<Transportation>> groundToDestination = buildGroundToDestinationMap(
+                flightsByOrigin, destinationId, dayOfWeek
+        );
+
+        return new RouteGraph(groundFromOrigin, flightsByOrigin, flightsToDestination, groundToDestination);
+    }
+
+    /**
+     * Build map of flights indexed by origin location.
+     */
+    private Map<UUID, List<Transportation>> buildFlightsByOriginMap(
+            Set<UUID> intermediateLocations, List<UUID> allLocationIds, UUID destinationId, int dayOfWeek) {
+        Map<UUID, List<Transportation>> flightsByOrigin = new HashMap<>();
+
+        for (UUID locationId : intermediateLocations) {
+            List<Transportation> flights = transportationRepository.findAvailableFlights(
+                    List.of(locationId),
+                    allLocationIds.stream().filter(id -> !id.equals(destinationId)).toList(),
+                    dayOfWeek
+            );
+            flightsByOrigin.put(locationId, flights);
+        }
+
+        return flightsByOrigin;
+    }
+
+    /**
+     * Build map of flights to destination indexed by origin location.
+     */
+    private Map<UUID, List<Transportation>> buildFlightsToDestinationMap(
+            Set<UUID> intermediateLocations, UUID destinationId, int dayOfWeek) {
+        Map<UUID, List<Transportation>> flightsToDestination = new HashMap<>();
+
+        for (UUID locationId : intermediateLocations) {
+            List<Transportation> flights = transportationRepository.findAvailableTransportationsByType(
+                    locationId, destinationId, TransportationType.FLIGHT, dayOfWeek
+            );
+            if (!flights.isEmpty()) {
+                flightsToDestination.put(locationId, flights);
+            }
+        }
+
+        return flightsToDestination;
+    }
+
+    /**
+     * Build map of ground transfers to destination indexed by origin location.
+     */
+    private Map<UUID, List<Transportation>> buildGroundToDestinationMap(
+            Map<UUID, List<Transportation>> flightsByOrigin, UUID destinationId, int dayOfWeek) {
+        Map<UUID, List<Transportation>> groundToDestination = new HashMap<>();
+
+        Set<UUID> flightDestinations = flightsByOrigin.values().stream()
+                .flatMap(List::stream)
+                .map(t -> t.getDestinationLocation().getId())
+                .collect(HashSet::new, HashSet::add, HashSet::addAll);
+
+        for (UUID locationId : flightDestinations) {
+            List<Transportation> groundTransfers = transportationRepository.findAvailableNonFlightTransportations(
+                    List.of(locationId), List.of(destinationId), dayOfWeek
+            );
+            if (!groundTransfers.isEmpty()) {
+                groundToDestination.put(locationId, groundTransfers);
+            }
+        }
+
+        return groundToDestination;
+    }
+
+    /**
+     * Find routes with before-flight transfer: Ground → Flight.
+     */
+    private List<RouteResponse> findBeforeFlightTransferRoutes(RouteGraph graph) {
+        logger.debug("Searching for routes with before-flight transfers...");
+        List<RouteResponse> routes = new ArrayList<>();
+
+        for (Transportation beforeTransfer : graph.groundFromOrigin) {
+            UUID intermediateId = beforeTransfer.getDestinationLocation().getId();
+            List<Transportation> connectingFlights = graph.flightsToDestination.get(intermediateId);
+
+            if (connectingFlights != null) {
+                for (Transportation flight : connectingFlights) {
+                    routes.add(buildRoute(List.of(beforeTransfer, flight)));
+                }
+            }
+        }
+
+        logger.debug("Found {} routes with before-flight transfers", routes.size());
+        return routes;
+    }
+
+    /**
+     * Find routes with after-flight transfer: Flight → Ground.
+     */
+    private List<RouteResponse> findAfterFlightTransferRoutes(UUID originId, RouteGraph graph) {
+        logger.debug("Searching for routes with after-flight transfers...");
+        List<RouteResponse> routes = new ArrayList<>();
+
+        List<Transportation> flightsFromOrigin = graph.flightsByOrigin.getOrDefault(originId, List.of());
+
+        for (Transportation flight : flightsFromOrigin) {
+            UUID intermediateId = flight.getDestinationLocation().getId();
+            List<Transportation> afterTransfers = graph.groundToDestination.get(intermediateId);
+
+            if (afterTransfers != null) {
+                for (Transportation afterTransfer : afterTransfers) {
+                    routes.add(buildRoute(List.of(flight, afterTransfer)));
+                }
+            }
+        }
+
+        logger.debug("Found {} routes with after-flight transfers", routes.size());
+        return routes;
+    }
+
+    /**
+     * Find routes with both transfers: Ground → Flight → Ground.
+     * Optimized from O(n³) to O(n) using adjacency maps.
+     */
+    private List<RouteResponse> findMultiTransferRoutes(RouteGraph graph) {
+        logger.debug("Searching for routes with both before and after-flight transfers...");
+        List<RouteResponse> routes = new ArrayList<>();
+
+        for (Transportation beforeTransfer : graph.groundFromOrigin) {
+            UUID firstIntermediateId = beforeTransfer.getDestinationLocation().getId();
+            List<Transportation> middleFlights = graph.flightsByOrigin.getOrDefault(firstIntermediateId, List.of());
+
+            for (Transportation flight : middleFlights) {
+                UUID secondIntermediateId = flight.getDestinationLocation().getId();
+                List<Transportation> afterTransfers = graph.groundToDestination.get(secondIntermediateId);
+
+                if (afterTransfers != null) {
+                    for (Transportation afterTransfer : afterTransfers) {
+                        routes.add(buildRoute(List.of(beforeTransfer, flight, afterTransfer)));
+                    }
+                }
+            }
+        }
+
+        logger.debug("Found {} routes with both transfers", routes.size());
+        return routes;
+    }
+
+    /**
+     * Internal class to hold the route graph structure.
+     * Contains adjacency maps for efficient O(1) lookups.
+     */
+    private record RouteGraph(
+            List<Transportation> groundFromOrigin,
+            Map<UUID, List<Transportation>> flightsByOrigin,
+            Map<UUID, List<Transportation>> flightsToDestination,
+            Map<UUID, List<Transportation>> groundToDestination
+    ) {}
 
     /**
      * Build a RouteResponse from a list of Transportation segments.
