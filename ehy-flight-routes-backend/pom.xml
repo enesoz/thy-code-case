@@ -13,9 +13,9 @@
     </parent>
     
     <groupId>com.ehy</groupId>
-    <artifactId>flight-routes-backend</artifactId>
+    <artifactId>backend</artifactId>
     <version>1.0.0</version>
-    <name>Enes Airlines Flight Routes Backend</name>
+    <name>Enes Airlines Backend</name>
     <description>Backend service for aviation route calculation system</description>
 
     <properties>
@@ -83,12 +83,6 @@
             <scope>runtime</scope>
         </dependency>
         
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        
         <!-- Liquibase -->
         <dependency>
             <groupId>org.liquibase</groupId>
@@ -147,6 +141,25 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Testcontainers for integration testing -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

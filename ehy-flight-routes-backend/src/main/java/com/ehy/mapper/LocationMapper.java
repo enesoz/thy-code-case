@@ -11,14 +11,12 @@ import java.util.List;
  * MapStruct mapper for converting between Location entity and DTOs.
  * Provides bidirectional mapping with custom configurations.
  */
-@Mapper(
-    componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
-)
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface LocationMapper {
 
     /**
      * Convert LocationRequest to Location entity
+     * 
      * @param request LocationRequest DTO
      * @return Location entity
      */
@@ -26,10 +24,15 @@ public interface LocationMapper {
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "optimisticLockVersion", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     Location toEntity(LocationRequest request);
 
     /**
      * Convert Location entity to LocationResponse
+     * 
      * @param location Location entity
      * @return LocationResponse DTO
      */
@@ -37,6 +40,7 @@ public interface LocationMapper {
 
     /**
      * Convert list of Location entities to list of LocationResponse DTOs
+     * 
      * @param locations List of Location entities
      * @return List of LocationResponse DTOs
      */
@@ -44,12 +48,17 @@ public interface LocationMapper {
 
     /**
      * Update existing Location entity from LocationRequest
-     * @param request LocationRequest DTO with updated values
+     * 
+     * @param request  LocationRequest DTO with updated values
      * @param location Existing Location entity to update
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "optimisticLockVersion", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     void updateEntityFromRequest(LocationRequest request, @MappingTarget Location location);
 }
