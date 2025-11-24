@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ehy-flight-routes-backend
+    name: backend
 
   profiles:
     active: local
