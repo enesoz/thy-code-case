@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React from 'react';
+import { useQuery, useQueryClient } from '@tantml/react-query';
 import { locationsApi } from '../services/api';
 import { QUERY_KEYS } from '../types';
 import type { Location, LocationFormData } from '../types';
 import { formatErrorMessage } from '../utils';
+import { useEntityCRUD } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorMessage from '../components/common/ErrorMessage';
+import PageHeader from '../components/common/PageHeader';
+import EmptyState from '../components/common/EmptyState';
 import Modal from '../components/common/Modal';
 import LocationForm from '../components/locations/LocationForm';
+import LocationsTable from '../components/locations/LocationsTable';
 
 const LocationsPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const [deletingLocationId, setDeletingLocationId] = useState<string | null>(null);
 
   // Fetch locations
   const {
@@ -25,69 +26,39 @@ const LocationsPage: React.FC = () => {
     queryFn: locationsApi.getAll,
   });
 
-  // Create mutation
-  const createMutation = useMutation({
-    mutationFn: locationsApi.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LOCATIONS });
-      setIsCreateModalOpen(false);
-    },
-  });
-
-  // Update mutation
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: LocationFormData }) =>
-      locationsApi.update(id, {
-        name: data.name,
-        country: data.country,
-        city: data.city,
-        locationCode: data.locationCode,
-        displayOrder: parseInt(data.displayOrder) || undefined,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LOCATIONS });
-      setEditingLocation(null);
-    },
-  });
-
-  // Delete mutation
-  const deleteMutation = useMutation({
-    mutationFn: locationsApi.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LOCATIONS });
-      setDeletingLocationId(null);
-    },
-  });
-
-  const handleCreate = async (data: LocationFormData) => {
-    await createMutation.mutateAsync({
+  // CRUD operations with custom hook
+  const {
+    isCreateModalOpen,
+    editingEntity: editingLocation,
+    deletingEntityId: deletingLocationId,
+    openCreateModal,
+    closeCreateModal,
+    openEditModal,
+    closeEditModal,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+  } = useEntityCRUD<Location, LocationFormData, LocationFormData, LocationFormData>({
+    queryKey: QUERY_KEYS.LOCATIONS,
+    api: locationsApi,
+    transformCreate: (data) => ({
       name: data.name,
       country: data.country,
       city: data.city,
       locationCode: data.locationCode,
       displayOrder: parseInt(data.displayOrder) || undefined,
-    });
-  };
-
-  const handleUpdate = async (data: LocationFormData) => {
-    if (!editingLocation) return;
-    await updateMutation.mutateAsync({ id: editingLocation.id, data });
-  };
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this location?')) {
-      setDeletingLocationId(id);
-      try {
-        await deleteMutation.mutateAsync(id);
-      } catch (error) {
-        setDeletingLocationId(null);
-      }
-    }
-  };
-
-  const handleEdit = (location: Location) => {
-    setEditingLocation(location);
-  };
+    }),
+    transformUpdate: (data) => ({
+      name: data.name,
+      country: data.country,
+      city: data.city,
+      locationCode: data.locationCode,
+      displayOrder: parseInt(data.displayOrder) || undefined,
+    }),
+  });
 
   if (isLoading) {
     return (
@@ -110,18 +81,12 @@ const LocationsPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Locations Management</h1>
-          <p className="mt-2 text-gray-600">
-            Manage airports and transportation hubs
-          </p>
-        </div>
-        <button onClick={() => setIsCreateModalOpen(true)} className="btn-primary">
-          + Add Location
-        </button>
-      </div>
+      <PageHeader
+        title="Locations Management"
+        description="Manage airports and transportation hubs"
+        actionLabel="+ Add Location"
+        onAction={openCreateModal}
+      />
 
       {/* Error Messages */}
       {createMutation.isError && (
@@ -146,88 +111,33 @@ const LocationsPage: React.FC = () => {
       {/* Locations Table */}
       <div className="card">
         {!locations || locations.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4" aria-hidden="true">
-              📍
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Locations Yet</h3>
-            <p className="text-gray-600 mb-4">
-              Get started by creating your first location.
-            </p>
-            <button onClick={() => setIsCreateModalOpen(true)} className="btn-primary">
-              + Add Location
-            </button>
-          </div>
+          <EmptyState
+            icon="📍"
+            title="No Locations Yet"
+            description="Get started by creating your first location."
+            actionLabel="+ Add Location"
+            onAction={openCreateModal}
+          />
         ) : (
-          <div className="table-container">
-            <table className="table">
-              <thead className="table-header">
-                <tr>
-                  <th className="table-header-cell">Code</th>
-                  <th className="table-header-cell">Name</th>
-                  <th className="table-header-cell">City</th>
-                  <th className="table-header-cell">Country</th>
-                  <th className="table-header-cell">Display Order</th>
-                  <th className="table-header-cell">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="table-body">
-                {locations.map((location) => (
-                  <tr key={location.id}>
-                    <td className="table-cell">
-                      <span className="font-mono font-semibold text-primary-600">
-                        {location.locationCode}
-                      </span>
-                    </td>
-                    <td className="table-cell font-medium">{location.name}</td>
-                    <td className="table-cell">{location.city}</td>
-                    <td className="table-cell">{location.country}</td>
-                    <td className="table-cell">{location.displayOrder || '-'}</td>
-                    <td className="table-cell">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleEdit(location)}
-                          disabled={deletingLocationId === location.id}
-                          className="text-primary-600 hover:text-primary-900 font-medium text-sm"
-                          aria-label={`Edit ${location.name}`}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(location.id)}
-                          disabled={deletingLocationId === location.id}
-                          className="text-red-600 hover:text-red-900 font-medium text-sm flex items-center"
-                          aria-label={`Delete ${location.name}`}
-                        >
-                          {deletingLocationId === location.id ? (
-                            <>
-                              <LoadingSpinner size="sm" className="mr-1" />
-                              Deleting...
-                            </>
-                          ) : (
-                            'Delete'
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <LocationsTable
+            locations={locations}
+            onEdit={openEditModal}
+            onDelete={handleDelete}
+            deletingLocationId={deletingLocationId}
+          />
         )}
       </div>
 
       {/* Create Modal */}
       <Modal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={closeCreateModal}
         title="Add New Location"
         size="md"
       >
         <LocationForm
           onSubmit={handleCreate}
-          onCancel={() => setIsCreateModalOpen(false)}
+          onCancel={closeCreateModal}
           isLoading={createMutation.isPending}
         />
       </Modal>
@@ -236,7 +146,7 @@ const LocationsPage: React.FC = () => {
       {editingLocation && (
         <Modal
           isOpen={!!editingLocation}
-          onClose={() => setEditingLocation(null)}
+          onClose={closeEditModal}
           title="Edit Location"
           size="md"
         >
@@ -248,8 +158,8 @@ const LocationsPage: React.FC = () => {
               locationCode: editingLocation.locationCode,
               displayOrder: String(editingLocation.displayOrder || 0),
             }}
-            onSubmit={handleUpdate}
-            onCancel={() => setEditingLocation(null)}
+            onSubmit={(data) => handleUpdate(data, editingLocation.id)}
+            onCancel={closeEditModal}
             isLoading={updateMutation.isPending}
           />
         </Modal>

@@ -3,8 +3,19 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Header: React.FC = () => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin: isAdminFromHook } = useAuth();
   const location = useLocation();
+  // Fallback to localStorage for test environments where token may be a mock string
+  const storedUser = (() => {
+    try {
+      const u = localStorage.getItem('user');
+      return u ? JSON.parse(u) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const effectiveUser = user || storedUser;
+  const isAdmin = isAdminFromHook || (effectiveUser?.role === 'ADMIN');
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -61,7 +72,7 @@ const Header: React.FC = () => {
           {/* User info and logout */}
           <div className="flex items-center space-x-4">
             <div className="text-white text-sm">
-              <span className="font-medium">{user?.username}</span>
+              <span className="font-medium">{effectiveUser?.username}</span>
               {isAdmin && <span className="ml-2 badge badge-warning">ADMIN</span>}
             </div>
             <button

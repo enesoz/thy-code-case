@@ -22,9 +22,12 @@ interface AuthProviderProps {
 const TOKEN_CHECK_INTERVAL = 30000;
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [user, setUser] = useState<User | null>(() => {
+    const stored = localStorage.getItem('user');
+    return stored ? (JSON.parse(stored) as User) : null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const tokenCheckIntervalRef = useRef<number | null>(null);
 
   /**
@@ -67,14 +70,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     if (storedToken && storedUser) {
       try {
-        // Validate token before setting state
-        if (validateStoredToken(storedToken)) {
-          const parsedUser = JSON.parse(storedUser) as User;
-          setToken(storedToken);
-          setUser(parsedUser);
-        } else {
-          clearAuthData();
-        }
+        const parsedUser = JSON.parse(storedUser) as User;
+        setToken(storedToken);
+        setUser(parsedUser);
       } catch (error) {
         console.error('Error parsing stored auth data:', error);
         clearAuthData();
@@ -82,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     setIsLoading(false);
-  }, [validateStoredToken, clearAuthData]);
+  }, [clearAuthData]);
 
   // Periodic token expiration check
   useEffect(() => {

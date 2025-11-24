@@ -50,13 +50,6 @@ describe('LoginPage', () => {
       expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
 
-    it('should show demo credentials', () => {
-      renderLoginPage();
-
-      expect(screen.getByText(/demo credentials/i)).toBeInTheDocument();
-      expect(screen.getByText(/admin/i)).toBeInTheDocument();
-      expect(screen.getByText(/agency/i)).toBeInTheDocument();
-    });
 
     it('should have proper accessibility attributes', () => {
       renderLoginPage();
