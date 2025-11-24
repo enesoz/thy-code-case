@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import Header from '../Header';
 import { AuthProvider } from '../../../contexts/AuthContext';
+import { generateMockJWT } from '../../../test/testUtils';
 
 // Mock the API
 vi.mock('../../../services/api', () => ({
@@ -20,7 +21,8 @@ describe('Header', () => {
   });
 
   const renderHeader = (role: 'ADMIN' | 'AGENCY' = 'ADMIN') => {
-    localStorage.setItem('token', 'mock-token');
+    const mockToken = generateMockJWT('testuser', role);
+    localStorage.setItem('token', mockToken);
     localStorage.setItem('user', JSON.stringify({ id: '1', username: 'testuser', role }));
 
     return render(

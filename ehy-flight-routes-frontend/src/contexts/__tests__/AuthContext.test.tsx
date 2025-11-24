@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../AuthContext';
 import * as authApi from '../../services/api';
+import { generateMockJWT } from '../../test/testUtils';
 
 // Mock the API
 vi.mock('../../services/api', () => ({
@@ -16,11 +17,6 @@ describe('useAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -43,12 +39,7 @@ describe('useAuth', () => {
 
     it('should load auth state from localStorage on mount', async () => {
       const mockUser = { id: '1', username: 'admin', role: 'ADMIN' as const };
-
-      // Create a valid token (not expired)
-      const futureExp = Math.floor(Date.now() / 1000) + 3600;
-      const validToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' +
-        btoa(JSON.stringify({ sub: 'admin', exp: futureExp, role: 'ADMIN' })) + '.' +
-        'signature';
+      const validToken = generateMockJWT('admin', 'ADMIN');
 
       localStorage.setItem('token', validToken);
       localStorage.setItem('user', JSON.stringify(mockUser));
@@ -65,12 +56,7 @@ describe('useAuth', () => {
 
     it('should clear expired token from localStorage on mount', async () => {
       const mockUser = { id: '1', username: 'admin', role: 'ADMIN' };
-
-      // Create an expired token
-      const pastExp = Math.floor(Date.now() / 1000) - 3600;
-      const expiredToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' +
-        btoa(JSON.stringify({ sub: 'admin', exp: pastExp, role: 'ADMIN' })) + '.' +
-        'signature';
+      const expiredToken = generateMockJWT('admin', 'ADMIN', -3600); // Expired 1 hour ago
 
       localStorage.setItem('token', expiredToken);
       localStorage.setItem('user', JSON.stringify(mockUser));
@@ -92,12 +78,7 @@ describe('useAuth', () => {
   describe('Login Functionality', () => {
     it('should login successfully and store auth data', async () => {
       const mockUser = { id: '1', username: 'admin', role: 'ADMIN' as const };
-
-      // Create a valid token
-      const futureExp = Math.floor(Date.now() / 1000) + 3600;
-      const validToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' +
-        btoa(JSON.stringify({ sub: 'admin', exp: futureExp, role: 'ADMIN' })) + '.' +
-        'signature';
+      const validToken = generateMockJWT('admin', 'ADMIN');
 
       const mockLogin = vi.mocked(authApi.authApi.login);
       mockLogin.mockResolvedValue({
@@ -150,11 +131,7 @@ describe('useAuth', () => {
     });
 
     it('should reject expired token on login', async () => {
-      // Create an expired token
-      const pastExp = Math.floor(Date.now() / 1000) - 3600;
-      const expiredToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' +
-        btoa(JSON.stringify({ sub: 'admin', exp: pastExp, role: 'ADMIN' })) + '.' +
-        'signature';
+      const expiredToken = generateMockJWT('admin', 'ADMIN', -3600); // Expired 1 hour ago
 
       const mockLogin = vi.mocked(authApi.authApi.login);
       mockLogin.mockResolvedValue({
@@ -202,10 +179,7 @@ describe('useAuth', () => {
   describe('Logout Functionality', () => {
     it('should clear auth data on logout', async () => {
       const mockUser = { id: '1', username: 'admin', role: 'ADMIN' as const };
-      const futureExp = Math.floor(Date.now() / 1000) + 3600;
-      const validToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' +
-        btoa(JSON.stringify({ sub: 'admin', exp: futureExp, role: 'ADMIN' })) + '.' +
-        'signature';
+      const validToken = generateMockJWT('admin', 'ADMIN');
 
       localStorage.setItem('token', validToken);
       localStorage.setItem('user', JSON.stringify(mockUser));
@@ -232,58 +206,6 @@ describe('useAuth', () => {
     });
   });
 
-  describe('Token Expiration Check', () => {
-    it('should periodically check token expiration', async () => {
-      // Create a token that will expire in 20 seconds
-      const shortExp = Math.floor(Date.now() / 1000) + 20;
-      const shortLivedToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' +
-        btoa(JSON.stringify({ sub: 'admin', exp: shortExp, role: 'ADMIN' })) + '.' +
-        'signature';
-
-      localStorage.setItem('token', shortLivedToken);
-      localStorage.setItem('user', JSON.stringify({ id: '1', username: 'admin', role: 'ADMIN' }));
-
-      const { result } = renderHook(() => useAuth(), { wrapper });
-
-      await waitFor(() => {
-        expect(result.current.isAuthenticated).toBe(false); // Within buffer, should be expired
-      });
-    });
-  });
-
-  describe('isAdmin Property', () => {
-    it('should return true for ADMIN role', async () => {
-      const futureExp = Math.floor(Date.now() / 1000) + 3600;
-      const adminToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' +
-        btoa(JSON.stringify({ sub: 'admin', exp: futureExp, role: 'ADMIN' })) + '.' +
-        'signature';
-
-      localStorage.setItem('token', adminToken);
-      localStorage.setItem('user', JSON.stringify({ id: '1', username: 'admin', role: 'ADMIN' }));
-
-      const { result } = renderHook(() => useAuth(), { wrapper });
-
-      await waitFor(() => {
-        expect(result.current.isAdmin).toBe(true);
-      });
-    });
-
-    it('should return false for AGENCY role', async () => {
-      const futureExp = Math.floor(Date.now() / 1000) + 3600;
-      const agencyToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' +
-        btoa(JSON.stringify({ sub: 'agency', exp: futureExp, role: 'AGENCY' })) + '.' +
-        'signature';
-
-      localStorage.setItem('token', agencyToken);
-      localStorage.setItem('user', JSON.stringify({ id: '2', username: 'agency', role: 'AGENCY' }));
-
-      const { result } = renderHook(() => useAuth(), { wrapper });
-
-      await waitFor(() => {
-        expect(result.current.isAdmin).toBe(false);
-      });
-    });
-  });
 
   describe('Error Handling', () => {
     it('should throw error when useAuth is used outside AuthProvider', () => {

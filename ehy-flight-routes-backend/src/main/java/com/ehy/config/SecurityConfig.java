@@ -65,8 +65,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
 
-                        // ADMIN-only endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/locations/**").hasRole("ADMIN")
+                        // Location endpoints - GET allowed for ADMIN and AGENCY, others ADMIN-only
+                        .requestMatchers(HttpMethod.GET, "/api/locations/**").hasAnyRole("ADMIN", "AGENCY")
                         .requestMatchers(HttpMethod.POST, "/api/locations/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/locations/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/locations/**").hasRole("ADMIN")

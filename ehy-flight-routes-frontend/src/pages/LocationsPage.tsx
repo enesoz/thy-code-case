@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery, useQueryClient } from '@tantml/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { locationsApi } from '../services/api';
 import { QUERY_KEYS } from '../types';
 import type { Location, LocationFormData } from '../types';

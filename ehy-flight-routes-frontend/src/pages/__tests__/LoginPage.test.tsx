@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import LoginPage from '../LoginPage';
 import { AuthProvider } from '../../contexts/AuthContext';
 import * as authApi from '../../services/api';
+import { generateMockJWT } from '../../test/testUtils';
 
 // Mock the API
 vi.mock('../../services/api', () => ({
@@ -142,8 +143,9 @@ describe('LoginPage', () => {
     it('should call login API with correct credentials', async () => {
       const user = userEvent.setup();
       const mockLogin = vi.mocked(authApi.authApi.login);
+      const validToken = generateMockJWT('admin', 'ADMIN');
       mockLogin.mockResolvedValue({
-        token: 'mock-token',
+        token: validToken,
         tokenType: 'Bearer',
         userId: '1',
         username: 'admin',
@@ -171,13 +173,14 @@ describe('LoginPage', () => {
     it('should show loading state during login', async () => {
       const user = userEvent.setup();
       const mockLogin = vi.mocked(authApi.authApi.login);
+      const validToken = generateMockJWT('admin', 'ADMIN');
       mockLogin.mockImplementation(
         () =>
           new Promise((resolve) =>
             setTimeout(
               () =>
                 resolve({
-                  token: 'mock-token',
+                  token: validToken,
                   tokenType: 'Bearer',
                   userId: '1',
                   username: 'admin',
@@ -210,8 +213,9 @@ describe('LoginPage', () => {
     it('should navigate to routes page after successful login', async () => {
       const user = userEvent.setup();
       const mockLogin = vi.mocked(authApi.authApi.login);
+      const validToken = generateMockJWT('admin', 'ADMIN');
       mockLogin.mockResolvedValue({
-        token: 'mock-token',
+        token: validToken,
         tokenType: 'Bearer',
         userId: '1',
         username: 'admin',
@@ -280,8 +284,9 @@ describe('LoginPage', () => {
       });
 
       // Second attempt - error should clear
+      const validToken = generateMockJWT('admin', 'ADMIN');
       mockLogin.mockResolvedValueOnce({
-        token: 'mock-token',
+        token: validToken,
         tokenType: 'Bearer',
         userId: '1',
         username: 'admin',

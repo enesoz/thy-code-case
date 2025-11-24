@@ -1,5 +1,5 @@
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 import type { Location, RouteSearchFormData } from '../../types';
 import { getTodayString } from '../../utils';
 import LoadingSpinner from '../common/LoadingSpinner';

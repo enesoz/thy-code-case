@@ -21,13 +21,13 @@ import java.util.UUID;
 
 /**
  * REST controller for location management.
- * Only accessible by users with ADMIN role.
+ * GET operations accessible by ADMIN and AGENCY roles.
+ * POST/PUT/DELETE operations accessible by ADMIN role only.
  */
 @RestController
 @RequestMapping("/api/locations")
-@Tag(name = "Locations", description = "Location management endpoints (ADMIN only)")
+@Tag(name = "Locations", description = "Location management endpoints")
 @SecurityRequirement(name = "Bearer Authentication")
-@PreAuthorize("hasRole('ADMIN')")
 public class LocationController {
 
     private final LocationService locationService;
@@ -41,6 +41,7 @@ public class LocationController {
      * @return List of locations
      */
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENCY')")
     @Operation(summary = "Get all locations", description = "Retrieve all non-deleted locations")
     @ApiResponses(value = {
             @ApiResponse(
@@ -53,7 +54,7 @@ public class LocationController {
             ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Forbidden - ADMIN role required"
+                    description = "Forbidden - ADMIN or AGENCY role required"
             )
     })
     public ResponseEntity<List<LocationResponse>> getAllLocations() {
@@ -67,6 +68,7 @@ public class LocationController {
      * @return Location details
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENCY')")
     @Operation(summary = "Get location by ID", description = "Retrieve a specific location by its ID")
     @ApiResponses(value = {
             @ApiResponse(
@@ -84,7 +86,7 @@ public class LocationController {
             ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Forbidden - ADMIN role required"
+                    description = "Forbidden - ADMIN or AGENCY role required"
             )
     })
     public ResponseEntity<LocationResponse> getLocationById(@PathVariable UUID id) {
@@ -98,6 +100,7 @@ public class LocationController {
      * @return Created location
      */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create location", description = "Create a new location")
     @ApiResponses(value = {
             @ApiResponse(
@@ -134,6 +137,7 @@ public class LocationController {
      * @return Updated location
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update location", description = "Update an existing location")
     @ApiResponses(value = {
             @ApiResponse(
@@ -175,6 +179,7 @@ public class LocationController {
      * @return No content
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete location", description = "Soft delete a location")
     @ApiResponses(value = {
             @ApiResponse(

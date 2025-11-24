@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import AdminRoute from '../AdminRoute';
 import { AuthProvider } from '../../../contexts/AuthContext';
+import { generateMockJWT } from '../../../test/testUtils';
 
 // Mock the API
 vi.mock('../../../services/api', () => ({
@@ -36,7 +37,8 @@ describe('AdminRoute', () => {
   const renderAdminRoute = (role: 'ADMIN' | 'AGENCY' | null = null) => {
     if (role) {
       // Set token in localStorage to simulate authenticated state
-      localStorage.setItem('token', 'mock-token');
+      const mockToken = generateMockJWT('test', role);
+      localStorage.setItem('token', mockToken);
       localStorage.setItem('user', JSON.stringify({ id: '1', username: 'test', role }));
     } else {
       localStorage.clear();

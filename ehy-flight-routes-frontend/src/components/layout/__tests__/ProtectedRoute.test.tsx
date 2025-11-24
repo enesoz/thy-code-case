@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import ProtectedRoute from '../ProtectedRoute';
 import { AuthProvider } from '../../../contexts/AuthContext';
+import { generateMockJWT } from '../../../test/testUtils';
 
 // Mock the API
 vi.mock('../../../services/api', () => ({
@@ -31,7 +32,8 @@ describe('ProtectedRoute', () => {
   const renderProtectedRoute = (authenticated: boolean = false) => {
     if (authenticated) {
       // Set token in localStorage to simulate authenticated state
-      localStorage.setItem('token', 'mock-token');
+      const mockToken = generateMockJWT('test', 'ADMIN');
+      localStorage.setItem('token', mockToken);
       localStorage.setItem(
         'user',
         JSON.stringify({ id: '1', username: 'test', role: 'ADMIN' })
