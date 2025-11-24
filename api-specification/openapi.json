@@ -1,1 +1,1193 @@
-﻿{"openapi":"3.0.1","info":{"title":"Enes Airlines Flight Route System API","description":"Backend API for aviation route calculation system.\n\n**Features:**\n- Route calculation with flights and ground transportation\n- Support for BUS, SUBWAY, UBER transfers\n- Operating days validation\n- JWT authentication\n- Role-based access control (ADMIN, AGENCY)\n- Redis caching for route search\n\n**Authentication:**\nUse the /api/auth/login endpoint to obtain a JWT token.\nThen use the token in the Authorization header: Bearer {token}\n","contact":{"name":"EHY Airlines Development Team","email":"csenes1987@gmail.com"},"license":{"name":"Private","url":"https://www.linkedin.com/in/eneso/"},"version":"1.0.0"},"servers":[{"url":"http://localhost:8080","description":"Generated server url"}],"security":[{"Bearer Authentication":[]}],"tags":[{"name":"Transportations","description":"Transportation management endpoints (ADMIN only)"},{"name":"Routes","description":"Route search endpoints (ADMIN and AGENCY)"},{"name":"Locations","description":"Location management endpoints (ADMIN only)"},{"name":"Authentication","description":"Authentication and authorization endpoints"}],"paths":{"/api/transportations/{id}":{"get":{"tags":["Transportations"],"summary":"Get transportation by ID","description":"Retrieve a specific transportation by its ID","operationId":"getTransportationById","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"responses":{"403":{"description":"Forbidden - ADMIN role required","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"200":{"description":"Successfully retrieved transportation","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"404":{"description":"Transportation not found","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}}},"security":[{"Bearer Authentication":[]}]},"put":{"tags":["Transportations"],"summary":"Update transportation","description":"Update an existing transportation","operationId":"updateTransportation","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TransportationRequest"}}},"required":true},"responses":{"403":{"description":"Forbidden - ADMIN role required","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"400":{"description":"Invalid request data","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"404":{"description":"Transportation, origin, or destination location not found","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"200":{"description":"Transportation updated successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}}},"security":[{"Bearer Authentication":[]}]},"delete":{"tags":["Transportations"],"summary":"Delete transportation","description":"Soft delete a transportation","operationId":"deleteTransportation","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"responses":{"403":{"description":"Forbidden - ADMIN role required"},"404":{"description":"Transportation not found"},"204":{"description":"Transportation deleted successfully"},"401":{"description":"Unauthorized"}},"security":[{"Bearer Authentication":[]}]}},"/api/locations/{id}":{"get":{"tags":["Locations"],"summary":"Get location by ID","description":"Retrieve a specific location by its ID","operationId":"getLocationById","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"responses":{"403":{"description":"Forbidden - ADMIN role required","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"200":{"description":"Successfully retrieved location","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"404":{"description":"Location not found","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}}},"security":[{"Bearer Authentication":[]}]},"put":{"tags":["Locations"],"summary":"Update location","description":"Update an existing location","operationId":"updateLocation","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LocationRequest"}}},"required":true},"responses":{"403":{"description":"Forbidden - ADMIN role required","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"409":{"description":"Location code already exists","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"200":{"description":"Location updated successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"400":{"description":"Invalid request data","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"404":{"description":"Location not found","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}}},"security":[{"Bearer Authentication":[]}]},"delete":{"tags":["Locations"],"summary":"Delete location","description":"Soft delete a location","operationId":"deleteLocation","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"responses":{"403":{"description":"Forbidden - ADMIN role required"},"404":{"description":"Location not found"},"204":{"description":"Location deleted successfully"},"401":{"description":"Unauthorized"}},"security":[{"Bearer Authentication":[]}]}},"/api/transportations":{"get":{"tags":["Transportations"],"summary":"Get all transportations","description":"Retrieve all non-deleted transportations","operationId":"getAllTransportations","responses":{"403":{"description":"Forbidden - ADMIN role required","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/TransportationResponse"}}}}},"200":{"description":"Successfully retrieved transportations","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/TransportationResponse"}}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/TransportationResponse"}}}}}},"security":[{"Bearer Authentication":[]}]},"post":{"tags":["Transportations"],"summary":"Create transportation","description":"Create a new transportation","operationId":"createTransportation","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TransportationRequest"}}},"required":true},"responses":{"403":{"description":"Forbidden - ADMIN role required","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"201":{"description":"Transportation created successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"400":{"description":"Invalid request data","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"404":{"description":"Origin or destination location not found","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TransportationResponse"}}}}},"security":[{"Bearer Authentication":[]}]}},"/api/locations":{"get":{"tags":["Locations"],"summary":"Get all locations","description":"Retrieve all non-deleted locations","operationId":"getAllLocations","responses":{"403":{"description":"Forbidden - ADMIN role required","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/LocationResponse"}}}}},"200":{"description":"Successfully retrieved locations","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/LocationResponse"}}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/LocationResponse"}}}}}},"security":[{"Bearer Authentication":[]}]},"post":{"tags":["Locations"],"summary":"Create location","description":"Create a new location","operationId":"createLocation","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LocationRequest"}}},"required":true},"responses":{"403":{"description":"Forbidden - ADMIN role required","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"409":{"description":"Location code already exists","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"201":{"description":"Location created successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"400":{"description":"Invalid request data","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LocationResponse"}}}}},"security":[{"Bearer Authentication":[]}]}},"/api/auth/login":{"post":{"tags":["Authentication"],"summary":"User login","description":"Authenticate user and generate JWT token. Use credentials: admin/admin123 or agency/agency123","operationId":"login","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LoginRequest"}}},"required":true},"responses":{"200":{"description":"Successfully authenticated","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LoginResponse"}}}},"401":{"description":"Invalid credentials","content":{"*/*":{"schema":{"$ref":"#/components/schemas/LoginResponse"}}}}}}},"/api/routes/search":{"get":{"tags":["Routes"],"summary":"Search routes","description":"Find all valid routes from origin to destination on a specific date.\n\n**Route Rules:**\n- Maximum 3 segments per route\n- Exactly 1 flight segment (mandatory)\n- Optional before-flight transfer (0-1 ground transport)\n- Optional after-flight transfer (0-1 ground transport)\n- All segments must operate on the selected date\n- Segments must be connected (arrival location = next departure location)\n\n**Valid Route Examples:**\n- FLIGHT\n- UBER â FLIGHT\n- FLIGHT â BUS\n- SUBWAY â FLIGHT â UBER\n\n**Caching:**\nResults are cached with Redis for 1 hour to improve performance.\n","operationId":"searchRoutes","parameters":[{"name":"originId","in":"query","description":"Origin location ID","required":true,"schema":{"type":"string","format":"uuid"},"example":"550e8400-e29b-41d4-a716-446655440000"},{"name":"destinationId","in":"query","description":"Destination location ID","required":true,"schema":{"type":"string","format":"uuid"},"example":"550e8400-e29b-41d4-a716-446655440001"},{"name":"date","in":"query","description":"Travel date (yyyy-MM-dd)","required":true,"schema":{"type":"string","format":"date"},"example":"2025-11-23"}],"responses":{"200":{"description":"Successfully retrieved routes (may be empty if no valid routes found)","content":{"*/*":{"schema":{"$ref":"#/components/schemas/RouteResponse"}}}},"403":{"description":"Forbidden - ADMIN or AGENCY role required","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/RouteResponse"}}}}},"400":{"description":"Invalid request parameters","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/RouteResponse"}}}}},"404":{"description":"Origin or destination location not found","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/RouteResponse"}}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/RouteResponse"}}}}}},"security":[{"Bearer Authentication":[]}]}}},"components":{"schemas":{"TransportationRequest":{"required":["destinationLocationId","operatingDays","originLocationId","transportationType"],"type":"object","properties":{"originLocationId":{"type":"string","description":"ID of the origin location","format":"uuid","example":"550e8400-e29b-41d4-a716-446655440000"},"destinationLocationId":{"type":"string","description":"ID of the destination location","format":"uuid","example":"550e8400-e29b-41d4-a716-446655440001"},"transportationType":{"type":"string","description":"Type of transportation","example":"FLIGHT","enum":["FLIGHT","BUS","SUBWAY","UBER"]},"operatingDays":{"type":"array","description":"Days of week when transportation operates (1=Monday, 2=Tuesday, ..., 7=Sunday). No duplicates allowed.","example":[1,3,5,7],"items":{"type":"integer","description":"Days of week when transportation operates (1=Monday, 2=Tuesday, ..., 7=Sunday). No duplicates allowed.","format":"int32"}}},"description":"Request DTO for creating or updating a transportation"},"LocationResponse":{"type":"object","properties":{"id":{"type":"string","description":"Unique identifier of the location","format":"uuid","example":"550e8400-e29b-41d4-a716-446655440000"},"name":{"type":"string","description":"Name of the location","example":"Istanbul Airport"},"country":{"type":"string","description":"Country where the location is situated","example":"Turkey"},"city":{"type":"string","description":"City where the location is situated","example":"Istanbul"},"locationCode":{"type":"string","description":"Unique location code (IATA code or custom)","example":"IST"},"displayOrder":{"type":"integer","description":"Display order for sorting","format":"int32","example":1}},"description":"Response DTO containing location information"},"TransportationResponse":{"type":"object","properties":{"id":{"type":"string","description":"Unique identifier of the transportation","format":"uuid","example":"550e8400-e29b-41d4-a716-446655440000"},"originLocation":{"$ref":"#/components/schemas/LocationResponse"},"destinationLocation":{"$ref":"#/components/schemas/LocationResponse"},"transportationType":{"type":"string","description":"Type of transportation","example":"FLIGHT","enum":["FLIGHT","BUS","SUBWAY","UBER"]},"operatingDays":{"type":"array","description":"Days of week when transportation operates (1=Monday, ..., 7=Sunday)","example":[1,3,5,7],"items":{"type":"integer","description":"Days of week when transportation operates (1=Monday, ..., 7=Sunday)","format":"int32"}}},"description":"Response DTO containing transportation information"},"LocationRequest":{"required":["city","country","locationCode","name"],"type":"object","properties":{"name":{"maxLength":100,"minLength":2,"type":"string","description":"Name of the location","example":"Istanbul Airport"},"country":{"maxLength":100,"minLength":2,"type":"string","description":"Country where the location is situated","example":"Turkey"},"city":{"maxLength":100,"minLength":2,"type":"string","description":"City where the location is situated","example":"Istanbul"},"locationCode":{"pattern":"^[A-Z0-9]{3,10}$","type":"string","description":"Unique location code (IATA code or custom)","example":"IST"},"displayOrder":{"type":"integer","description":"Display order for sorting","format":"int32","example":1}},"description":"Request DTO for creating or updating a location"},"LoginRequest":{"required":["password","username"],"type":"object","properties":{"username":{"type":"string","description":"Username for authentication","example":"admin"},"password":{"type":"string","description":"Password for authentication","example":"admin123"}},"description":"Request DTO for user login"},"LoginResponse":{"type":"object","properties":{"token":{"type":"string","description":"JWT access token","example":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."},"tokenType":{"type":"string","description":"Token type","example":"Bearer"},"userId":{"type":"string","description":"User ID","format":"uuid","example":"550e8400-e29b-41d4-a716-446655440000"},"username":{"type":"string","description":"Username","example":"admin"},"role":{"type":"string","description":"User role","example":"ADMIN","enum":["ADMIN","AGENCY"]}},"description":"Response DTO for successful login"},"RouteResponse":{"type":"object","properties":{"segments":{"type":"array","description":"List of transportation segments in order (1-3 segments)","items":{"$ref":"#/components/schemas/RouteSegmentResponse"}},"totalSegments":{"type":"integer","description":"Total number of segments in the route","format":"int32","example":2},"hasBeforeFlightTransfer":{"type":"boolean","description":"Indicates if this route has a before-flight transfer","example":true},"hasAfterFlightTransfer":{"type":"boolean","description":"Indicates if this route has an after-flight transfer","example":false}},"description":"Complete route from origin to destination"},"RouteSegmentResponse":{"type":"object","properties":{"transportationId":{"type":"string","description":"Unique identifier of the transportation","format":"uuid","example":"550e8400-e29b-41d4-a716-446655440000"},"originLocation":{"$ref":"#/components/schemas/LocationResponse"},"destinationLocation":{"$ref":"#/components/schemas/LocationResponse"},"transportationType":{"type":"string","description":"Type of transportation","example":"FLIGHT","enum":["FLIGHT","BUS","SUBWAY","UBER"]},"segmentOrder":{"type":"integer","description":"Segment order in the route (1-based)","format":"int32","example":1}},"description":"A single transportation segment in a route"}},"securitySchemes":{"Bearer Authentication":{"type":"http","description":"Enter JWT token obtained from /api/auth/login","name":"Bearer Authentication","scheme":"bearer","bearerFormat":"JWT"}}}}
+﻿{
+  "openapi":"3.0.1",
+  "info":{
+    "title":"Enes Airlines Flight Route System API",
+    "description":"Backend API for aviation route calculation system.\n\n**Features:**\n- Route calculation with flights and ground transportation\n- Support for BUS, SUBWAY, UBER transfers\n- Operating days validation\n- JWT authentication\n- Role-based access control (ADMIN, AGENCY)\n- Redis caching for route search\n\n**Authentication:**\nUse the /api/auth/login endpoint to obtain a JWT token.\nThen use the token in the Authorization header: Bearer {token}\n",
+    "contact":{
+      "name":"EHY Airlines Development Team",
+      "email":"csenes1987@gmail.com"
+    },
+    "license":{
+      "name":"Private",
+      "url":"https://www.linkedin.com/in/eneso/"
+    },
+    "version":"1.0.0"
+  },
+  "servers":[
+    {
+      "url":"http://localhost:8080",
+      "description":"Generated server url"
+    }
+  ],
+  "security":[
+    {
+      "Bearer Authentication":[
+
+      ]
+    }
+  ],
+  "tags":[
+    {
+      "name":"Transportations",
+      "description":"Transportation management endpoints (ADMIN only)"
+    },
+    {
+      "name":"Routes",
+      "description":"Route search endpoints (ADMIN and AGENCY)"
+    },
+    {
+      "name":"Locations",
+      "description":"Location management endpoints (ADMIN only)"
+    },
+    {
+      "name":"Authentication",
+      "description":"Authentication and authorization endpoints"
+    }
+  ],
+  "paths":{
+    "/api/transportations/{id}":{
+      "get":{
+        "tags":[
+          "Transportations"
+        ],
+        "summary":"Get transportation by ID",
+        "description":"Retrieve a specific transportation by its ID",
+        "operationId":"getTransportationById",
+        "parameters":[
+          {
+            "name":"id",
+            "in":"path",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"uuid"
+            }
+          }
+        ],
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "200":{
+            "description":"Successfully retrieved transportation",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "404":{
+            "description":"Transportation not found",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      },
+      "put":{
+        "tags":[
+          "Transportations"
+        ],
+        "summary":"Update transportation",
+        "description":"Update an existing transportation",
+        "operationId":"updateTransportation",
+        "parameters":[
+          {
+            "name":"id",
+            "in":"path",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"uuid"
+            }
+          }
+        ],
+        "requestBody":{
+          "content":{
+            "application/json":{
+              "schema":{
+                "$ref":"#/components/schemas/TransportationRequest"
+              }
+            }
+          },
+          "required":true
+        },
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "400":{
+            "description":"Invalid request data",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "404":{
+            "description":"Transportation, origin, or destination location not found",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "200":{
+            "description":"Transportation updated successfully",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      },
+      "delete":{
+        "tags":[
+          "Transportations"
+        ],
+        "summary":"Delete transportation",
+        "description":"Soft delete a transportation",
+        "operationId":"deleteTransportation",
+        "parameters":[
+          {
+            "name":"id",
+            "in":"path",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"uuid"
+            }
+          }
+        ],
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required"
+          },
+          "404":{
+            "description":"Transportation not found"
+          },
+          "204":{
+            "description":"Transportation deleted successfully"
+          },
+          "401":{
+            "description":"Unauthorized"
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      }
+    },
+    "/api/locations/{id}":{
+      "get":{
+        "tags":[
+          "Locations"
+        ],
+        "summary":"Get location by ID",
+        "description":"Retrieve a specific location by its ID",
+        "operationId":"getLocationById",
+        "parameters":[
+          {
+            "name":"id",
+            "in":"path",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"uuid"
+            }
+          }
+        ],
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "200":{
+            "description":"Successfully retrieved location",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "404":{
+            "description":"Location not found",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      },
+      "put":{
+        "tags":[
+          "Locations"
+        ],
+        "summary":"Update location",
+        "description":"Update an existing location",
+        "operationId":"updateLocation",
+        "parameters":[
+          {
+            "name":"id",
+            "in":"path",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"uuid"
+            }
+          }
+        ],
+        "requestBody":{
+          "content":{
+            "application/json":{
+              "schema":{
+                "$ref":"#/components/schemas/LocationRequest"
+              }
+            }
+          },
+          "required":true
+        },
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "409":{
+            "description":"Location code already exists",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "200":{
+            "description":"Location updated successfully",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "400":{
+            "description":"Invalid request data",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "404":{
+            "description":"Location not found",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      },
+      "delete":{
+        "tags":[
+          "Locations"
+        ],
+        "summary":"Delete location",
+        "description":"Soft delete a location",
+        "operationId":"deleteLocation",
+        "parameters":[
+          {
+            "name":"id",
+            "in":"path",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"uuid"
+            }
+          }
+        ],
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required"
+          },
+          "404":{
+            "description":"Location not found"
+          },
+          "204":{
+            "description":"Location deleted successfully"
+          },
+          "401":{
+            "description":"Unauthorized"
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      }
+    },
+    "/api/transportations":{
+      "get":{
+        "tags":[
+          "Transportations"
+        ],
+        "summary":"Get all transportations",
+        "description":"Retrieve all non-deleted transportations",
+        "operationId":"getAllTransportations",
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/TransportationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "200":{
+            "description":"Successfully retrieved transportations",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/TransportationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/TransportationResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      },
+      "post":{
+        "tags":[
+          "Transportations"
+        ],
+        "summary":"Create transportation",
+        "description":"Create a new transportation",
+        "operationId":"createTransportation",
+        "requestBody":{
+          "content":{
+            "application/json":{
+              "schema":{
+                "$ref":"#/components/schemas/TransportationRequest"
+              }
+            }
+          },
+          "required":true
+        },
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "201":{
+            "description":"Transportation created successfully",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "400":{
+            "description":"Invalid request data",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "404":{
+            "description":"Origin or destination location not found",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransportationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      }
+    },
+    "/api/locations":{
+      "get":{
+        "tags":[
+          "Locations"
+        ],
+        "summary":"Get all locations",
+        "description":"Retrieve all non-deleted locations",
+        "operationId":"getAllLocations",
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/LocationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "200":{
+            "description":"Successfully retrieved locations",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/LocationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/LocationResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      },
+      "post":{
+        "tags":[
+          "Locations"
+        ],
+        "summary":"Create location",
+        "description":"Create a new location",
+        "operationId":"createLocation",
+        "requestBody":{
+          "content":{
+            "application/json":{
+              "schema":{
+                "$ref":"#/components/schemas/LocationRequest"
+              }
+            }
+          },
+          "required":true
+        },
+        "responses":{
+          "403":{
+            "description":"Forbidden - ADMIN role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "409":{
+            "description":"Location code already exists",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "201":{
+            "description":"Location created successfully",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "400":{
+            "description":"Invalid request data",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LocationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      }
+    },
+    "/api/auth/login":{
+      "post":{
+        "tags":[
+          "Authentication"
+        ],
+        "summary":"User login",
+        "description":"Authenticate user and generate JWT token. Use credentials: admin/admin123 or agency/agency123",
+        "operationId":"login",
+        "requestBody":{
+          "content":{
+            "application/json":{
+              "schema":{
+                "$ref":"#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required":true
+        },
+        "responses":{
+          "200":{
+            "description":"Successfully authenticated",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Invalid credentials",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/routes/search":{
+      "get":{
+        "tags":[
+          "Routes"
+        ],
+        "summary":"Search routes",
+        "description":"Find all valid routes from origin to destination on a specific date.\n\n**Route Rules:**\n- Maximum 3 segments per route\n- Exactly 1 flight segment (mandatory)\n- Optional before-flight transfer (0-1 ground transport)\n- Optional after-flight transfer (0-1 ground transport)\n- All segments must operate on the selected date\n- Segments must be connected (arrival location = next departure location)\n\n**Valid Route Examples:**\n- FLIGHT\n- UBER â FLIGHT\n- FLIGHT â BUS\n- SUBWAY â FLIGHT â UBER\n\n**Caching:**\nResults are cached with Redis for 1 hour to improve performance.\n",
+        "operationId":"searchRoutes",
+        "parameters":[
+          {
+            "name":"originId",
+            "in":"query",
+            "description":"Origin location ID",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"uuid"
+            },
+            "example":"550e8400-e29b-41d4-a716-446655440000"
+          },
+          {
+            "name":"destinationId",
+            "in":"query",
+            "description":"Destination location ID",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"uuid"
+            },
+            "example":"550e8400-e29b-41d4-a716-446655440001"
+          },
+          {
+            "name":"date",
+            "in":"query",
+            "description":"Travel date (yyyy-MM-dd)",
+            "required":true,
+            "schema":{
+              "type":"string",
+              "format":"date"
+            },
+            "example":"2025-11-23"
+          }
+        ],
+        "responses":{
+          "200":{
+            "description":"Successfully retrieved routes (may be empty if no valid routes found)",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "$ref":"#/components/schemas/RouteResponse"
+                }
+              }
+            }
+          },
+          "403":{
+            "description":"Forbidden - ADMIN or AGENCY role required",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/RouteResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400":{
+            "description":"Invalid request parameters",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/RouteResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404":{
+            "description":"Origin or destination location not found",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/RouteResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401":{
+            "description":"Unauthorized",
+            "content":{
+              "*/*":{
+                "schema":{
+                  "type":"array",
+                  "items":{
+                    "$ref":"#/components/schemas/RouteResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "Bearer Authentication":[
+
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "components":{
+    "schemas":{
+      "TransportationRequest":{
+        "required":[
+          "destinationLocationId",
+          "operatingDays",
+          "originLocationId",
+          "transportationType"
+        ],
+        "type":"object",
+        "properties":{
+          "originLocationId":{
+            "type":"string",
+            "description":"ID of the origin location",
+            "format":"uuid",
+            "example":"550e8400-e29b-41d4-a716-446655440000"
+          },
+          "destinationLocationId":{
+            "type":"string",
+            "description":"ID of the destination location",
+            "format":"uuid",
+            "example":"550e8400-e29b-41d4-a716-446655440001"
+          },
+          "transportationType":{
+            "type":"string",
+            "description":"Type of transportation",
+            "example":"FLIGHT",
+            "enum":[
+              "FLIGHT",
+              "BUS",
+              "SUBWAY",
+              "UBER"
+            ]
+          },
+          "operatingDays":{
+            "type":"array",
+            "description":"Days of week when transportation operates (1=Monday, 2=Tuesday, ..., 7=Sunday). No duplicates allowed.",
+            "example":[
+              1,
+              3,
+              5,
+              7
+            ],
+            "items":{
+              "type":"integer",
+              "description":"Days of week when transportation operates (1=Monday, 2=Tuesday, ..., 7=Sunday). No duplicates allowed.",
+              "format":"int32"
+            }
+          }
+        },
+        "description":"Request DTO for creating or updating a transportation"
+      },
+      "LocationResponse":{
+        "type":"object",
+        "properties":{
+          "id":{
+            "type":"string",
+            "description":"Unique identifier of the location",
+            "format":"uuid",
+            "example":"550e8400-e29b-41d4-a716-446655440000"
+          },
+          "name":{
+            "type":"string",
+            "description":"Name of the location",
+            "example":"Istanbul Airport"
+          },
+          "country":{
+            "type":"string",
+            "description":"Country where the location is situated",
+            "example":"Turkey"
+          },
+          "city":{
+            "type":"string",
+            "description":"City where the location is situated",
+            "example":"Istanbul"
+          },
+          "locationCode":{
+            "type":"string",
+            "description":"Unique location code (IATA code or custom)",
+            "example":"IST"
+          },
+          "displayOrder":{
+            "type":"integer",
+            "description":"Display order for sorting",
+            "format":"int32",
+            "example":1
+          }
+        },
+        "description":"Response DTO containing location information"
+      },
+      "TransportationResponse":{
+        "type":"object",
+        "properties":{
+          "id":{
+            "type":"string",
+            "description":"Unique identifier of the transportation",
+            "format":"uuid",
+            "example":"550e8400-e29b-41d4-a716-446655440000"
+          },
+          "originLocation":{
+            "$ref":"#/components/schemas/LocationResponse"
+          },
+          "destinationLocation":{
+            "$ref":"#/components/schemas/LocationResponse"
+          },
+          "transportationType":{
+            "type":"string",
+            "description":"Type of transportation",
+            "example":"FLIGHT",
+            "enum":[
+              "FLIGHT",
+              "BUS",
+              "SUBWAY",
+              "UBER"
+            ]
+          },
+          "operatingDays":{
+            "type":"array",
+            "description":"Days of week when transportation operates (1=Monday, ..., 7=Sunday)",
+            "example":[
+              1,
+              3,
+              5,
+              7
+            ],
+            "items":{
+              "type":"integer",
+              "description":"Days of week when transportation operates (1=Monday, ..., 7=Sunday)",
+              "format":"int32"
+            }
+          }
+        },
+        "description":"Response DTO containing transportation information"
+      },
+      "LocationRequest":{
+        "required":[
+          "city",
+          "country",
+          "locationCode",
+          "name"
+        ],
+        "type":"object",
+        "properties":{
+          "name":{
+            "maxLength":100,
+            "minLength":2,
+            "type":"string",
+            "description":"Name of the location",
+            "example":"Istanbul Airport"
+          },
+          "country":{
+            "maxLength":100,
+            "minLength":2,
+            "type":"string",
+            "description":"Country where the location is situated",
+            "example":"Turkey"
+          },
+          "city":{
+            "maxLength":100,
+            "minLength":2,
+            "type":"string",
+            "description":"City where the location is situated",
+            "example":"Istanbul"
+          },
+          "locationCode":{
+            "pattern":"^[A-Z0-9]{3,10}$",
+            "type":"string",
+            "description":"Unique location code (IATA code or custom)",
+            "example":"IST"
+          },
+          "displayOrder":{
+            "type":"integer",
+            "description":"Display order for sorting",
+            "format":"int32",
+            "example":1
+          }
+        },
+        "description":"Request DTO for creating or updating a location"
+      },
+      "LoginRequest":{
+        "required":[
+          "password",
+          "username"
+        ],
+        "type":"object",
+        "properties":{
+          "username":{
+            "type":"string",
+            "description":"Username for authentication",
+            "example":"admin"
+          },
+          "password":{
+            "type":"string",
+            "description":"Password for authentication",
+            "example":"admin123"
+          }
+        },
+        "description":"Request DTO for user login"
+      },
+      "LoginResponse":{
+        "type":"object",
+        "properties":{
+          "token":{
+            "type":"string",
+            "description":"JWT access token",
+            "example":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "tokenType":{
+            "type":"string",
+            "description":"Token type",
+            "example":"Bearer"
+          },
+          "userId":{
+            "type":"string",
+            "description":"User ID",
+            "format":"uuid",
+            "example":"550e8400-e29b-41d4-a716-446655440000"
+          },
+          "username":{
+            "type":"string",
+            "description":"Username",
+            "example":"admin"
+          },
+          "role":{
+            "type":"string",
+            "description":"User role",
+            "example":"ADMIN",
+            "enum":[
+              "ADMIN",
+              "AGENCY"
+            ]
+          }
+        },
+        "description":"Response DTO for successful login"
+      },
+      "RouteResponse":{
+        "type":"object",
+        "properties":{
+          "segments":{
+            "type":"array",
+            "description":"List of transportation segments in order (1-3 segments)",
+            "items":{
+              "$ref":"#/components/schemas/RouteSegmentResponse"
+            }
+          },
+          "totalSegments":{
+            "type":"integer",
+            "description":"Total number of segments in the route",
+            "format":"int32",
+            "example":2
+          },
+          "hasBeforeFlightTransfer":{
+            "type":"boolean",
+            "description":"Indicates if this route has a before-flight transfer",
+            "example":true
+          },
+          "hasAfterFlightTransfer":{
+            "type":"boolean",
+            "description":"Indicates if this route has an after-flight transfer",
+            "example":false
+          }
+        },
+        "description":"Complete route from origin to destination"
+      },
+      "RouteSegmentResponse":{
+        "type":"object",
+        "properties":{
+          "transportationId":{
+            "type":"string",
+            "description":"Unique identifier of the transportation",
+            "format":"uuid",
+            "example":"550e8400-e29b-41d4-a716-446655440000"
+          },
+          "originLocation":{
+            "$ref":"#/components/schemas/LocationResponse"
+          },
+          "destinationLocation":{
+            "$ref":"#/components/schemas/LocationResponse"
+          },
+          "transportationType":{
+            "type":"string",
+            "description":"Type of transportation",
+            "example":"FLIGHT",
+            "enum":[
+              "FLIGHT",
+              "BUS",
+              "SUBWAY",
+              "UBER"
+            ]
+          },
+          "segmentOrder":{
+            "type":"integer",
+            "description":"Segment order in the route (1-based)",
+            "format":"int32",
+            "example":1
+          }
+        },
+        "description":"A single transportation segment in a route"
+      }
+    },
+    "securitySchemes":{
+      "Bearer Authentication":{
+        "type":"http",
+        "description":"Enter JWT token obtained from /api/auth/login",
+        "name":"Bearer Authentication",
+        "scheme":"bearer",
+        "bearerFormat":"JWT"
+      }
+    }
+  }
+}

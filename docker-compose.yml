@@ -37,14 +37,14 @@ services:
     build: ./ehy-flight-routes-backend
     container_name: ehy-backend
     environment:
-      SPRING_PROFILES_ACTIVE: production
+      SPRING_PROFILES_ACTIVE: local
       # Provide required JWT secret for production profile
       JWT_SECRET: "ThisIsADevOnlyJwtSecretForDockerComposeDoNotUseInProd_ChangeMe"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ehy_flight_routes
       SPRING_DATASOURCE_USERNAME: ehy_user
       SPRING_DATASOURCE_PASSWORD: ehy_password
-      SPRING_REDIS_HOST: redis
-      SPRING_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,7 +63,10 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./ehy-flight-routes-frontend
+    build:
+      context: ./ehy-flight-routes-frontend
+      args:
+        VITE_API_URL: http://localhost:8080/api
     container_name: ehy-frontend
     depends_on:
       backend:
