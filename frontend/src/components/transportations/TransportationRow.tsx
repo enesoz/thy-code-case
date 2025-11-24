@@ -24,11 +24,11 @@ export const TransportationRow: React.FC<TransportationRowProps> = ({
             <td className="table-cell">
                 <div className="flex items-center space-x-2">
                     <span className="text-xl" aria-hidden="true">
-                        {getTransportationTypeIcon(transportation.transportationType)}
+                        {getTransportationTypeIcon(transportation.transportationType!)}
                     </span>
                     <span
                         className={`badge ${getTransportationTypeColor(
-                            transportation.transportationType
+                            transportation.transportationType!
                         )}`}
                     >
                         {transportation.transportationType}
@@ -37,39 +37,39 @@ export const TransportationRow: React.FC<TransportationRowProps> = ({
             </td>
             <td className="table-cell">
                 <span className="font-mono text-sm">
-                    {transportation.originLocation.locationCode} →{' '}
-                    {transportation.destinationLocation.locationCode}
+                    {transportation.originLocation?.locationCode || '???'} →{' '}
+                    {transportation.destinationLocation?.locationCode || '???'}
                 </span>
             </td>
             <td className="table-cell">
                 <div>
-                    <div className="font-medium">{transportation.originLocation.name}</div>
+                    <div className="font-medium">{transportation.originLocation?.name || 'Unknown'}</div>
                     <div className="text-xs text-gray-500">
-                        {transportation.originLocation.city}
+                        {transportation.originLocation?.city || '-'}
                     </div>
                 </div>
             </td>
             <td className="table-cell">
                 <div>
                     <div className="font-medium">
-                        {transportation.destinationLocation.name}
+                        {transportation.destinationLocation?.name || 'Unknown'}
                     </div>
                     <div className="text-xs text-gray-500">
-                        {transportation.destinationLocation.city}
+                        {transportation.destinationLocation?.city || '-'}
                     </div>
                 </div>
             </td>
             <td className="table-cell">
                 <span className="text-sm">
-                    {formatOperatingDays(transportation.operatingDays)}
+                    {formatOperatingDays(transportation.operatingDays ?? [])}
                 </span>
             </td>
             <td className="table-cell">
                 <TableActions
                     onEdit={() => onEdit(transportation)}
-                    onDelete={() => onDelete(transportation.id)}
+                    onDelete={() => onDelete(transportation.id!)}
                     isDeleting={isDeleting}
-                    itemName={`transportation from ${transportation.originLocation.name}`}
+                    itemName={`transportation from ${transportation.originLocation?.name || 'Unknown'}`}
                 />
             </td>
         </tr>

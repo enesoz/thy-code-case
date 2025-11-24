@@ -6,6 +6,7 @@ import LoginPage from '../LoginPage';
 import { AuthProvider } from '../../contexts/AuthContext';
 import * as authApi from '../../services/api';
 import { generateMockJWT } from '../../test/testUtils';
+import { LoginResponse } from '../../../../api-specification/generated';
 
 // Mock the API
 vi.mock('../../services/api', () => ({
@@ -149,7 +150,7 @@ describe('LoginPage', () => {
         tokenType: 'Bearer',
         userId: '1',
         username: 'admin',
-        role: 'ADMIN',
+        role: LoginResponse.role.ADMIN,
       });
 
       renderLoginPage();
@@ -184,7 +185,7 @@ describe('LoginPage', () => {
                   tokenType: 'Bearer',
                   userId: '1',
                   username: 'admin',
-                  role: 'ADMIN',
+                  role: LoginResponse.role.ADMIN,
                 }),
               100
             )
@@ -219,7 +220,7 @@ describe('LoginPage', () => {
         tokenType: 'Bearer',
         userId: '1',
         username: 'admin',
-        role: 'ADMIN',
+        role: LoginResponse.role.ADMIN,
       });
 
       renderLoginPage();
@@ -290,7 +291,7 @@ describe('LoginPage', () => {
         tokenType: 'Bearer',
         userId: '1',
         username: 'admin',
-        role: 'ADMIN',
+        role: LoginResponse.role.ADMIN,
       });
 
       await user.clear(usernameInput);

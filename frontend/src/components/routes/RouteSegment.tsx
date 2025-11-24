@@ -31,29 +31,29 @@ export const RouteSegment: React.FC<RouteSegmentProps> = ({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                             <span className="text-2xl" aria-hidden="true">
-                                {getTransportationTypeIcon(segment.transportationType)}
+                                {getTransportationTypeIcon(segment.transportationType!)}
                             </span>
                             <div>
                                 <div className="flex items-center space-x-2">
                                     <span className="font-semibold text-gray-900">
-                                        {segment.originLocation.name}
+                                        {segment.originLocation?.name || 'Unknown'}
                                     </span>
                                     <span className="text-gray-500">→</span>
                                     <span className="font-semibold text-gray-900">
-                                        {segment.destinationLocation.name}
+                                        {segment.destinationLocation?.name || 'Unknown'}
                                     </span>
                                 </div>
                                 <div className="flex items-center space-x-2 mt-1">
                                     <span
                                         className={`badge ${getTransportationTypeColor(
-                                            segment.transportationType
+                                            segment.transportationType!
                                         )}`}
                                     >
                                         {segment.transportationType}
                                     </span>
                                     <span className="text-xs text-gray-500">
-                                        {segment.originLocation.locationCode} →{' '}
-                                        {segment.destinationLocation.locationCode}
+                                        {segment.originLocation?.locationCode || '???'} →{' '}
+                                        {segment.destinationLocation?.locationCode || '???'}
                                     </span>
                                 </div>
                             </div>

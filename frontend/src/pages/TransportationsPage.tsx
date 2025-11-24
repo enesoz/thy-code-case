@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { transportationsApi } from '../services/api';
 import { QUERY_KEYS, TransportationType } from '../types';
-import type { Transportation, TransportationFormData } from '../types';
+import type { Transportation, TransportationFormData, TransportationRequest } from '../types';
 import { formatErrorMessage } from '../utils';
 import { useEntityCRUD } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -41,19 +41,19 @@ const TransportationsPage: React.FC = () => {
     handleCreate,
     handleUpdate,
     handleDelete,
-  } = useEntityCRUD<Transportation, TransportationFormData, TransportationFormData, TransportationFormData>({
+  } = useEntityCRUD<Transportation, TransportationFormData, TransportationRequest, TransportationRequest>({
     queryKey: QUERY_KEYS.TRANSPORTATIONS,
     api: transportationsApi,
     transformCreate: (data) => ({
       originLocationId: data.originLocationId,
       destinationLocationId: data.destinationLocationId,
-      transportationType: data.transportationType as TransportationType,
+      transportationType: (data.transportationType !== '' ? data.transportationType : TransportationType.FLIGHT) as TransportationRequest['transportationType'],
       operatingDays: data.operatingDays,
     }),
     transformUpdate: (data) => ({
       originLocationId: data.originLocationId,
       destinationLocationId: data.destinationLocationId,
-      transportationType: data.transportationType as TransportationType,
+      transportationType: (data.transportationType !== '' ? data.transportationType : TransportationType.FLIGHT) as TransportationRequest['transportationType'],
       operatingDays: data.operatingDays,
     }),
   });
@@ -150,12 +150,12 @@ const TransportationsPage: React.FC = () => {
         >
           <TransportationForm
             initialData={{
-              originLocationId: editingTransportation.originLocation.id,
-              destinationLocationId: editingTransportation.destinationLocation.id,
-              transportationType: editingTransportation.transportationType,
-              operatingDays: editingTransportation.operatingDays,
+              originLocationId: editingTransportation.originLocation?.id || '',
+              destinationLocationId: editingTransportation.destinationLocation?.id || '',
+              transportationType: editingTransportation.transportationType || '',
+              operatingDays: editingTransportation.operatingDays || [],
             }}
-            onSubmit={(data) => handleUpdate(data, editingTransportation.id)}
+            onSubmit={(data) => handleUpdate(data, editingTransportation.id!)}
             onCancel={closeEditModal}
             isLoading={updateMutation.isPending}
           />

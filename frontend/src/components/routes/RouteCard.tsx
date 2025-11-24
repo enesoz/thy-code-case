@@ -11,6 +11,9 @@ interface RouteCardProps {
  * Component to display a complete route with all its segments
  */
 export const RouteCard: React.FC<RouteCardProps> = ({ route, index }) => {
+    const totalSegments = route.totalSegments ?? 0;
+    const segments = route.segments ?? [];
+
     return (
         <div className="card hover:shadow-lg transition-shadow duration-200">
             <div className="flex items-center justify-between mb-4">
@@ -18,18 +21,18 @@ export const RouteCard: React.FC<RouteCardProps> = ({ route, index }) => {
                     Route Option {index + 1}
                 </h3>
                 <span className="badge badge-info">
-                    {route.totalSegments} segment{route.totalSegments > 1 ? 's' : ''}
+                    {totalSegments} segment{totalSegments > 1 ? 's' : ''}
                 </span>
             </div>
 
             {/* Route Segments */}
             <div className="space-y-4">
-                {route.segments.map((segment, segmentIndex) => (
+                {segments.map((segment, segmentIndex) => (
                     <RouteSegment
                         key={segmentIndex}
                         segment={segment}
-                        segmentOrder={segment.segmentOrder}
-                        isLast={segmentIndex === route.segments.length - 1}
+                        segmentOrder={segment.segmentOrder ?? segmentIndex + 1}
+                        isLast={segmentIndex === segments.length - 1}
                     />
                 ))}
             </div>

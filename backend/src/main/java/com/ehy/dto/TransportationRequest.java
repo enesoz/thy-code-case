@@ -31,7 +31,7 @@ public class TransportationRequest {
     private UUID destinationLocationId;
 
     @NotNull(message = "Transportation type is required")
-    @Schema(description = "Type of transportation", example = "FLIGHT", required = true)
+    @Schema(description = "Type of transportation", example = "FLIGHT", required = true )
     private TransportationType transportationType;
 
     @NotNull(message = "Operating days are required")

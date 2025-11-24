@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../AuthContext';
 import * as authApi from '../../services/api';
 import { generateMockJWT } from '../../test/testUtils';
+import { LoginResponse } from '../../../../api-specification/generated';
 
 // Mock the API
 vi.mock('../../services/api', () => ({
@@ -38,7 +39,7 @@ describe('useAuth', () => {
     });
 
     it('should load auth state from localStorage on mount', async () => {
-      const mockUser = { id: '1', username: 'admin', role: 'ADMIN' as const };
+      const mockUser = { id: '1', username: 'admin', role: LoginResponse.role.ADMIN };
       const validToken = generateMockJWT('admin', 'ADMIN');
 
       localStorage.setItem('token', validToken);
@@ -77,7 +78,7 @@ describe('useAuth', () => {
 
   describe('Login Functionality', () => {
     it('should login successfully and store auth data', async () => {
-      const mockUser = { id: '1', username: 'admin', role: 'ADMIN' as const };
+      const mockUser = { id: '1', username: 'admin', role: LoginResponse.role.ADMIN };
       const validToken = generateMockJWT('admin', 'ADMIN');
 
       const mockLogin = vi.mocked(authApi.authApi.login);
@@ -114,7 +115,7 @@ describe('useAuth', () => {
         tokenType: 'Bearer',
         userId: '1',
         username: 'admin',
-        role: 'ADMIN' as const,
+        role: LoginResponse.role.ADMIN,
       });
 
       const { result } = renderHook(() => useAuth(), { wrapper });
@@ -139,7 +140,7 @@ describe('useAuth', () => {
         tokenType: 'Bearer',
         userId: '1',
         username: 'admin',
-        role: 'ADMIN' as const,
+        role: LoginResponse.role.ADMIN,
       });
 
       const { result } = renderHook(() => useAuth(), { wrapper });
@@ -178,7 +179,7 @@ describe('useAuth', () => {
 
   describe('Logout Functionality', () => {
     it('should clear auth data on logout', async () => {
-      const mockUser = { id: '1', username: 'admin', role: 'ADMIN' as const };
+      const mockUser = { id: '1', username: 'admin', role: LoginResponse.role.ADMIN };
       const validToken = generateMockJWT('admin', 'ADMIN');
 
       localStorage.setItem('token', validToken);

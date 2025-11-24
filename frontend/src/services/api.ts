@@ -3,11 +3,9 @@ import type {
   LoginRequest,
   LoginResponse,
   Location,
-  LocationCreateRequest,
-  LocationUpdateRequest,
+  LocationRequest,
   Transportation,
-  TransportationCreateRequest,
-  TransportationUpdateRequest,
+  TransportationRequest,
   RouteSearchParams,
   RouteResponse,
   ApiError,
@@ -139,12 +137,12 @@ export const locationsApi = {
     return response.data;
   },
 
-  create: async (data: LocationCreateRequest): Promise<Location> => {
+  create: async (data: LocationRequest): Promise<Location> => {
     const response = await api.post<Location>('/locations', data);
     return response.data;
   },
 
-  update: async (id: string, data: LocationUpdateRequest): Promise<Location> => {
+  update: async (id: string, data: LocationRequest): Promise<Location> => {
     const response = await api.put<Location>(`/locations/${id}`, data);
     return response.data;
   },
@@ -166,12 +164,12 @@ export const transportationsApi = {
     return response.data;
   },
 
-  create: async (data: TransportationCreateRequest): Promise<Transportation> => {
+  create: async (data: TransportationRequest): Promise<Transportation> => {
     const response = await api.post<Transportation>('/transportations', data);
     return response.data;
   },
 
-  update: async (id: string, data: TransportationUpdateRequest): Promise<Transportation> => {
+  update: async (id: string, data: TransportationRequest): Promise<Transportation> => {
     const response = await api.put<Transportation>(`/transportations/${id}`, data);
     return response.data;
   },

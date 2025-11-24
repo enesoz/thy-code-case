@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { locationsApi } from '../services/api';
 import { QUERY_KEYS } from '../types';
-import type { Location, LocationFormData } from '../types';
+import type { Location, LocationFormData, LocationRequest } from '../types';
 import { formatErrorMessage } from '../utils';
 import { useEntityCRUD } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -41,22 +41,22 @@ const LocationsPage: React.FC = () => {
     handleCreate,
     handleUpdate,
     handleDelete,
-  } = useEntityCRUD<Location, LocationFormData, LocationFormData, LocationFormData>({
+  } = useEntityCRUD<Location, LocationFormData, LocationRequest, LocationRequest>({
     queryKey: QUERY_KEYS.LOCATIONS,
     api: locationsApi,
-    transformCreate: (data) => ({
+    transformCreate: (data): LocationRequest => ({
       name: data.name,
       country: data.country,
       city: data.city,
       locationCode: data.locationCode,
-      displayOrder: parseInt(data.displayOrder) || undefined,
+      displayOrder: data.displayOrder ? parseInt(data.displayOrder, 10) : undefined,
     }),
-    transformUpdate: (data) => ({
+    transformUpdate: (data): LocationRequest => ({
       name: data.name,
       country: data.country,
       city: data.city,
       locationCode: data.locationCode,
-      displayOrder: parseInt(data.displayOrder) || undefined,
+      displayOrder: data.displayOrder ? parseInt(data.displayOrder, 10) : undefined,
     }),
   });
 
@@ -152,13 +152,13 @@ const LocationsPage: React.FC = () => {
         >
           <LocationForm
             initialData={{
-              name: editingLocation.name,
-              country: editingLocation.country,
-              city: editingLocation.city,
-              locationCode: editingLocation.locationCode,
-              displayOrder: String(editingLocation.displayOrder || 0),
+              name: editingLocation.name || '',
+              country: editingLocation.country || '',
+              city: editingLocation.city || '',
+              locationCode: editingLocation.locationCode || '',
+              displayOrder: editingLocation.displayOrder !== undefined ? String(editingLocation.displayOrder) : '0',
             }}
-            onSubmit={(data) => handleUpdate(data, editingLocation.id)}
+            onSubmit={(data) => handleUpdate(data, editingLocation.id!)}
             onCancel={closeEditModal}
             isLoading={updateMutation.isPending}
           />

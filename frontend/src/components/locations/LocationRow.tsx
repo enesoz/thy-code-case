@@ -25,16 +25,16 @@ export const LocationRow: React.FC<LocationRowProps> = ({
                     {location.locationCode}
                 </span>
             </td>
-            <td className="table-cell font-medium">{location.name}</td>
+            <td className="table-cell font-medium">{location.name || '-'}</td>
             <td className="table-cell">{location.city}</td>
             <td className="table-cell">{location.country}</td>
             <td className="table-cell">{location.displayOrder || '-'}</td>
             <td className="table-cell">
                 <TableActions
                     onEdit={() => onEdit(location)}
-                    onDelete={() => onDelete(location.id)}
+                    onDelete={() => onDelete(location.id!)}
                     isDeleting={isDeleting}
-                    itemName={location.name}
+                    itemName={location.name || 'location'}
                 />
             </td>
         </tr>

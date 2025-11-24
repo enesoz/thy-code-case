@@ -46,23 +46,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  /**
-   * Validates stored token and clears if expired
-   */
-  const validateStoredToken = useCallback((storedToken: string): boolean => {
-    if (!isValidTokenFormat(storedToken)) {
-      console.warn('Invalid token format detected');
-      return false;
-    }
-
-    if (isTokenExpired(storedToken)) {
-      console.warn('Token expired, clearing auth data');
-      return false;
-    }
-
-    return true;
-  }, []);
-
   // Initialize auth state from localStorage on mount
   useEffect(() => {
     const storedToken = localStorage.getItem('token');

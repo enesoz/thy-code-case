@@ -15,21 +15,14 @@ export type {
 // ============================================================================
 // Re-export Shared Types and Utilities
 // ============================================================================
+import type { UserRole, TransportationType } from '../../../api-specification/shared.js';
+
 export {
     UserRole,
     TransportationType,
     isDefined,
     validateRequired,
-} from '../../../api-specification/shared';
-export type { UserRole, TransportationType } from '../../../api-specification/shared';
-
-// ============================================================================
-// Type Aliases for Convenience
-// ============================================================================
-export type LocationCreateRequest = LocationRequest;
-export type LocationUpdateRequest = LocationRequest;
-export type TransportationCreateRequest = TransportationRequest;
-export type TransportationUpdateRequest = TransportationRequest;
+} from '../../../api-specification/shared.js';
 
 // Shorter aliases for common types
 export type { LocationResponse as Location } from '../../../api-specification/generated';
