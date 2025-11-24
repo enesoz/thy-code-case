@@ -16,26 +16,26 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Frontend (React/Vite)
-ehy-flight-routes-frontend/node_modules
-ehy-flight-routes-frontend/dist
-ehy-flight-routes-frontend/dist-ssr
-ehy-flight-routes-frontend/*.local
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+frontend/*.local
 
 # Backend (Spring Boot/Maven)
-ehy-flight-routes-backend/HELP.md
-ehy-flight-routes-backend/target/
-!ehy-flight-routes-backend/.mvn/wrapper/maven-wrapper.jar
-!ehy-flight-routes-backend/**/src/main/**/target/
-!ehy-flight-routes-backend/**/src/test/**/target/
+backend/HELP.md
+backend/target/
+!backend/.mvn/wrapper/maven-wrapper.jar
+!backend/**/src/main/**/target/
+!backend/**/src/test/**/target/
 
 ### STS ###
-ehy-flight-routes-backend/.apt_generated
-ehy-flight-routes-backend/.classpath
-ehy-flight-routes-backend/.factorypath
-ehy-flight-routes-backend/.project
-ehy-flight-routes-backend/.settings
-ehy-flight-routes-backend/.springBeans
-ehy-flight-routes-backend/.sts4-cache
+backend/.apt_generated
+backend/.classpath
+backend/.factorypath
+backend/.project
+backend/.settings
+backend/.springBeans
+backend/.sts4-cache
 
 ### IntelliJ IDEA ###
 .idea
@@ -44,18 +44,18 @@ ehy-flight-routes-backend/.sts4-cache
 *.ipr
 
 ### NetBeans ###
-ehy-flight-routes-backend/nbproject/private/
-ehy-flight-routes-backend/nbbuild/
-ehy-flight-routes-backend/nbdist/
-ehy-flight-routes-backend/.nb-gradle/
-ehy-flight-routes-backend/build/
-!ehy-flight-routes-backend/**/src/main/**/build/
-!ehy-flight-routes-backend/**/src/test/**/build/
+backend/nbproject/private/
+backend/nbbuild/
+backend/nbdist/
+backend/.nb-gradle/
+backend/build/
+!backend/**/src/main/**/build/
+!backend/**/src/test/**/build/
 
 ### VS Code ###
 .vscode/*
 !.vscode/extensions.json
-ehy-flight-routes-backend/.vscode/
+backend/.vscode/
 
 ### OS Files ###
 .DS_Store
